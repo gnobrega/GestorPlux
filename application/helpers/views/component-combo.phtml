@@ -1,0 +1,41 @@
+<?php
+    //Atributos
+    $label      = $this->comboConfig['label'];
+    $name       = $this->comboConfig['name'];
+    $class      = $this->comboConfig['class'];
+    $pk         = $this->comboConfig['pk'];
+    $firstNull  = $this->comboConfig['firstNull'];
+    $entity      = $this->comboConfig['entity'];
+    $value      = @$this->comboConfig['value'];
+    $required   = ( isset($this->comboConfig['required']) ) ? 'required' : '';
+    $multiple   = ( isset($this->comboConfig['multiple']) ) ? 'multiple' : '';
+    $placeholder   = ( isset($this->comboConfig['placeholder']) ) ? $this->comboConfig['placeholder'] : '';
+
+    //Imprime o Html
+    echo "<select name='{$name}' class='{$class}' {$required} entity='{$entity}' {$multiple} >";
+    
+    //Primeiro elemento
+    if( $firstNull ) {
+        echo '<option value="">[Selecione]</option>';
+    }
+    
+    //Lista de valores
+    foreach( $this->comboConfig['data'] as $data ) {
+        if( !is_array($value) ) {
+            $selected = ($data[$pk] == $value) ? 'selected' : '';
+        } else {
+            $selected = ( in_array($data[$pk], $value) !== FALSE) ? 'selected' : '';
+        }
+        echo "<option value='{$data[$pk]}' {$selected}>{$data[$label]}</option>";
+    }
+    echo "</select>";
+
+    //Se for um campo múltiplo, carrega o plugin
+    if( $multiple ) {
+        echo "<script> var opt = {};";
+        if( $placeholder ) {
+            echo "opt.placeholder = '$placeholder';\n";
+        }
+        echo "$(\"select[name='{$name}']\").select2(opt);</script>";
+    }
+?>

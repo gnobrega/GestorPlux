@@ -1,0 +1,190 @@
+<?php
+//Atributos
+$name       = $this->fileConfig['name'];
+$value      = $this->fileConfig['value'];
+$src        = ( isset($this->fileConfig['src']) ) ? $this->fileConfig['src'] : $value;
+$caption    = $this->fileConfig['caption'];
+$accept     = $this->fileConfig['accept'];
+$controller = $this->fileConfig['controller'];
+$showPreview= $this->fileConfig['showPreview'];
+$nameFileInput   = substr($name, 1) . '_file';
+$extraData  = json_encode($this->fileConfig['extraData']);
+$idDiv = "dvInputFile{$name}";
+
+//Html
+echo "<div id='{$idDiv}' class='component-file'>";
+echo "<input name='{$nameFileInput}' type='file' accept='{$accept}' class='file-loading' />";
+echo "<input name='{$nameFileInput}_src' class='file-src' value='{$src}' type='hidden' />";
+
+//Crop
+if( isset($this->fileConfig['crop']) ) {
+    //Esconde o preview
+    echo "<style>.file-preview {display: none;}</style>";
+    echo "<script>var showPreview = true;</script>";
+    echo "<script>var aspectRatio = {$this->fileConfig['crop']['aspectRatio']};</script>";
+    echo "<script>var strAspectRatio = '{$this->fileConfig['crop']['aspectRatio']}';</script>";
+    echo "<br /><br /><div class='cropper{$name}'>";
+    if( $src && is_file('.' . $src) ) {
+        $rand = rand(10000, 999999);
+        echo "<img src='{$src}?nochade={$rand}' />";
+    }
+    echo "</div>";
+    echo "<button class='btn btn-success crop hidden' style='float:right;margin-top: 10px;'>Recortar</button><div class='clear'></div>";
+}
+
+echo "</div>";
+?>
+
+<script>
+    <?php echo "var idDiv = '$idDiv';\n " ?>
+    <?php echo "var nameFileInput = '$nameFileInput';\n " ?>
+    <?php echo "var name = '$name';\n " ?>
+    var waitUpload = false;
+  
+    //Upload
+    var $objFile = $("input[name=" + nameFileInput + "]");
+    var optsUpload = {
+        initialCaption: '<?php echo $caption ?>',
+        uploadUrl: "<?php echo $this->fileConfig['uploadUrl']; ?>",
+        showRemove: false,
+        showCancel: false,
+        showPreview: <?php echo $showPreview ?>,
+        showUpload: true,
+        uploadExtraData: <?php echo $extraData ?>
+    };
+    
+    //Gera o preview quando a imagem já existe
+    <?php
+        if( $src && $accept == 'image/*' ) {
+            echo "optsUpload.initialPreview = ['<img src=\"{$src}\" class=\"file-preview-image\">']; \n";
+        } else if( $accept == '.flv,.mp4' && $value ) {
+            $ext = substr($src, -3);
+            if( $ext == 'flv' ) {
+                echo "optsUpload.initialPreview = ['<img src=\"/img/icons/flv.jpg\" class=\"file-preview-image\">']; \n";
+            } else if( $ext == 'mp4' ) {
+                echo "optsUpload.initialPreview = ['<video controls src=\"{$src}\" class=\"file-preview-image\">']; \n";
+            }
+        }
+    ?>
+    $objFile.fileinput(optsUpload);
+    
+    //Adiciona um campo hidden para armazenar o source
+    $objFile.after("<input type='hidden' name='" + name + "' />");
+    $('input[name='+name+']').val('<?php echo $value ?>');
+    
+    //Dispara o upload automaticamente após selecionar o arquivo
+    $objFile.on('fileloaded', function (event, file, previewId, index, reader) {
+        var name = $('#' + previewId).closest('span.file-input').find('div.btn-file input[type=hidden]').attr('name');
+        waitUpload = true;
+        
+        //Verifica se já possui uma imagem. Caso sim, remove
+        if( $('input[name='+name+']').val() != '' ) {
+            $objFile.trigger('fileclear', previewId);
+        }
+
+        //Força o upload
+        var btnUpload = $('#' + previewId).closest('span.file-input').find('.fileinput-upload-button');
+        btnUpload.click();
+        btnUpload.hide();
+    });
+    
+    //Após carregamento
+    $objFile.on('fileuploaded', function (event, data, previewId, index) {
+        var name = $('#' + previewId).closest('span.file-input').find('div.btn-file input[type=hidden]').attr('name').substr(1);
+        var containerCropper = $('input[name=_' + name + ']').closest('.component-file');
+        waitUpload = false;
+        var form = data.form, 
+        files = data.files, 
+        extra = data.extra,
+        response = data.response, 
+        reader = data.reader;
+        response[name].src = response[name].src.substr(1);
+        $('input[name=' + name +'_file_src]').val(response[name].src);
+        
+        //Extrai o valor
+        var value = '';
+        if( response[name].id ) {
+            value = response[name].id;
+        } else {
+            value = response[name].src;
+        }
+
+        //Alimenta o input hidden com o src
+        $("input[name=_" + name + "]").val(value);
+                        
+        //Crop
+        if( typeof showPreview != 'undefined' ) {
+            var src = response[name].src;
+            var containerCropper = $('input[name=_' + name + ']').closest('.component-file');
+            containerCropper.find('.cropper_'+name).html("<img src='" + src + "' />");
+            $image = $('.cropper_'+name+" > img");
+            $image.cropper({
+                aspectRatio: aspectRatio,
+                autoCropArea: 0.65,
+                guides: false,
+                highlight: false,
+                zoomable: false,
+                dragCrop: false,
+            });
+            
+            //Exibe o botão de recorte
+            var btnCrop = containerCropper.find('button.crop');
+            btnCrop.removeClass('hidden');
+            
+            //Confirma o recorte
+            btnCrop.off('click');
+            btnCrop.on('click', function(e) {
+                $image = $('.cropper_'+name+" > img");
+                
+                e.preventDefault();
+                var aspect = strAspectRatio;
+                var posW = aspect.indexOf('/');
+                var posH = aspect.indexOf('/') + 1;
+                var widthFinal = aspect.substr(0, posW);
+                var heightFinal = aspect.substr(posH);
+                wait();
+                
+                var data = {
+                    src: response[name].src,
+                    config: $image.cropper('getData'),
+                    widthFinal: widthFinal,
+                    heightFinal: heightFinal,
+                }
+                $.post('/index/crop', data, function(rs) {
+                    if( rs.status == 'success' ) {
+                        $image = $('.cropper_'+name+" > img");
+                        
+                        //Remove a estrutura de crop                        
+                        $image.cropper('destroy');
+                        var d = new Date();
+                        $image.attr("src", src+'?'+d.getTime());
+                        containerCropper.find('button.crop').addClass('hidden');
+                    } else {
+                        notification(rs.msgErro, 'danger');
+                    }
+                    wait(1);
+                },'json');
+            });
+        }
+    });
+    
+    //Remove o arquivo
+    $objFile.on('fileclear', function(event, previewId) {
+        var name = $('#' + previewId).closest('span.file-input').find('div.btn-file input[type=hidden]').attr('name');
+        var $objInput = $("input[name=" + name + "]");
+        var containerCropper = $objInput.closest('.component-file');
+        var inputSrc = containerCropper.find('input.file-src');
+        var srcFile = inputSrc.val();
+
+        //Deleta o arquivo
+        if( srcFile ) {
+            $.post('/<?php echo $controller; ?>/remover-arquivo', {src:srcFile}, function(rs) {
+                if( rs.status == 'success' ) {
+                    $("input[name=" + name + "]").val('');
+                    inputSrc.val('');
+                }
+            }, 'json')
+        }
+    });
+
+</script>

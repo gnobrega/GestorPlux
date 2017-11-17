@@ -1,0 +1,41 @@
+<?php echo $this->doctype(); ?>
+
+<html lang="pt">
+    <head>
+        <meta name="viewport" content="width=400, user-scalable=no">
+        <?php
+            echo $this->headLink()->appendStylesheet($this->baseUrl() . '/css/temas/custom.css');
+        ?>
+    </head>
+    <body>
+        
+        <!-- Logo -->
+        <div id="dvHeader">
+            <div id="dbHdContainer">
+                <img id="imgLogo" title="Logo MarkTv" src="/img/icons/logo-home.png" />
+            </div>
+        </div>
+        
+        <div id="dvContent">
+            
+            <!-- Form -->
+            <div id="dvLogin">
+                <form>
+                    
+                    <input type="text" name="usuario" class="usuario" value="" placeholder="Usuário" />
+                    <input type="submit" name="entrar" class="entrar" value="ENTRAR" />
+                    <input type="password" name="senha" class="senha" value="" placeholder="Senha" />
+                </form>
+            </div>
+            
+            <!-- Objetos -->
+            <img id="imgAbaju" src="/img/abaju.png" title="Abaju MarkTv" />
+            <img id="imgTv" src="/img/tv-home.png" title="Tv MarkTv" />
+            <img id="imgSofa" src="/img/sofa.png" title="Sofá MarkTv" />
+        </div>
+        
+        <!-- Footer -->
+        <div id="dvFooter"></div>
+        <div id="dvFooterText">2017 - Powered by Mark TV:  www.meucanaldetv.com.br | Esqueceu a senha? Escreva para atendimento@marktv.com.br</div>
+    </body>
+</html>

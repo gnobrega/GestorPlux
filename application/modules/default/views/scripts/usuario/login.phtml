@@ -1,0 +1,75 @@
+<!-- Right side column. Contains the navbar and content of the page -->
+<aside id="page-login" class="right-side right-side-login">
+
+    <?php echo $this->page()->header() ?>
+
+    <section class="content">
+        
+        <!-- Notificações -->
+        <div id="dv-notification"></div>
+        
+        <!--<div class="row">
+            <div class="col-xs-12 col-lg-6  col-lg-offset-3 dv-alert-flash" >
+                <div class="title">.:IMPORTANTE:.</div>
+                <div class="content">
+                    Informamos que, devida à atualização recente do <strong>Google Chrome</strong>, pode ser necessário reinstalar o plugin do <strong>Flash Player</strong> no seu navegador. Se estiver com problemas para realizar a pré-visualização dos conteúdos publicados, acesse o link abaixo e siga as instruções de instalação:
+                    <a href="https://get.adobe.com/br/flashplayer" target="_blank">https://get.adobe.com/br/flashplayer</a>
+                </div>
+                
+            </div>
+        </div>-->
+            
+        <div class="container container-login" style="margin-top:40px">
+            <div class="row">
+                <div class="col-xs-12 col-lg-4  col-lg-offset-4" >
+                    <div class="panel panel-default">
+                        <div id="login-titulo" class="panel-heading">GESTOR DE CONTEÚDO</div>
+                        <div class="panel-body">
+                            <form role="form" action="/usuario/autenticar" method="POST">
+                                <fieldset>
+                                    <div class="row">
+                                        <div class="login-img center-block">
+                                            <img class="profile-img"
+                                                 src="/img/empty-profile.jpg" alt="">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12 col-md-10  col-md-offset-1 ">
+                                            
+                                            <!-- Usuário -->
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon">
+                                                        <i class="glyphicon glyphicon-user"></i>
+                                                    </span> 
+                                                    <input class="form-control" placeholder="Usuário" name="usuario" type="text" required autofocus>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Senha -->
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon">
+                                                        <i class="glyphicon glyphicon-lock"></i>
+                                                    </span>
+                                                    <input class="form-control" placeholder="Senha" name="senha" type="password" required value="">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" id="btn-entrar" class="btn btn-lg btn-primary btn-block" value="Entrar">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </form>
+                        </div>
+                        <div class="panel-footer ">
+                            <!--Esqueceu a senha? <a target="_blank" href="http://gestor.3midia.com.br/usuario/esqueci-a-senha"> Clique aqui </a>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</aside><!-- /.right-side -->

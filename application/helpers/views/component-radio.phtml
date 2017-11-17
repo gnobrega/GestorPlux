@@ -1,0 +1,29 @@
+<?php
+    
+    //Atributos
+    $name = $this->radioConfig['name'];
+    $data = $this->radioConfig['data'];
+    $class = $this->radioConfig['class'];
+    $required = $this->radioConfig['required'];
+    $currentValue = $this->radioConfig['value'];
+    
+    //Html
+    echo "<div class='btn-group' data-toggle='buttons'>";
+    
+    foreach( $data as $valor=>$label ) {
+        $strVal = (string)$valor;
+        $classItem = $class;
+        $checked = '';
+        
+        //Item selecionado
+        if( $currentValue === $strVal ) {
+            $classItem .= ' active';
+            $checked = 'checked';
+        }
+             
+        //Componente
+        echo "<label class='{$classItem}'><input type='radio' name='{$name}' value='{$valor}' {$checked} required='{$required}'> {$label}</label>";
+    }
+    
+    echo "</div>";
+?>

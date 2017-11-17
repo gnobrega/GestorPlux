@@ -1,0 +1,63 @@
+<?php
+    //Dashboard
+    //$this->InlineScript()->appendFile($this->baseUrl() . '/js/bootstrap/AdminLTE/dashboard.js')
+?>
+
+<!-- Right side column. Contains the navbar and content of the page -->
+<aside class="right-side">
+    <!-- Content Header (Page header) -->
+    <?php echo $this->page()->header() ?>
+
+    <!-- Main content -->
+    <section class="content content-modules">
+        
+        <!-- Notificações -->
+        <div id="dv-notification"></div>
+
+            <?php
+                if( isset($this->templates) ) {
+
+                    //Exibe os box com os módulos
+                    foreach( $this->templates as $idcliente => $lstTemplate ) {
+                        echo "<!-- Small boxes (Stat box) -->";
+                        echo '<div class="row">';
+                        
+                        echo "<h3 style='margin-left:15px'>{$lstTemplate[0]['cliente']}</h3>";
+                        
+                        foreach( $lstTemplate as $template ) {
+                            $color = "bg-blue";
+            ?>
+            
+                            <div class="col-lg-3 col-xs-6">
+                                <!-- small box -->
+                                <div class="small-box <?php echo $color ?> resume-module">
+                                    <div class="inner">
+                                        <h3>
+                                             <a href="<?=$template['link']?>"><?=$template['total']?></a>
+                                        </h3>
+                                        <p>
+                                            <a href="<?=$template['link']?>"><?=$template['nome']?></a>
+                                        </p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fa fa-film"></i>
+                                    </div>
+                                    <a href="<?=$template['link']?>" class="small-box-footer">
+                                        Gerenciar <i class="fa fa-arrow-circle-right"></i>
+                                    </a>
+                                </div>
+                            </div><!-- ./col -->
+
+            <?php
+                        }
+                        echo "</div>";
+                    }
+                }
+            ?>
+            
+        </div><!-- /.row -->
+
+        <!-- Main row -->
+        
+    </section><!-- /.content -->
+</aside><!-- /.right-side -->
