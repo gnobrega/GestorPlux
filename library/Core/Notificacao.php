@@ -51,7 +51,7 @@ class Core_Notificacao {
      * @param array $msg
      */
     private static function gerarScript($msg) {
-        self::$script .= "notification(\"{$msg['mensagem']}\", '{$msg['tipo']}');\n";
+        self::$script .= "toastr.{$msg['tipo']}(\"{$msg['mensagem']}\");\n";
     }
 
     /**

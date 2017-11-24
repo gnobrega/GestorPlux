@@ -28,6 +28,11 @@ class AbstractController extends Zend_Controller_Action {
         
         //Importa as views das helpers
         $this->view->addScriptPath( APPLICATION_PATH . "/helpers/views/");
+        
+        //Seta a entidade
+        if( $this->_model ) {
+            $this->view->entity = $this->_model->getName();
+        }
     }
     
     /**
@@ -84,11 +89,22 @@ class AbstractController extends Zend_Controller_Action {
             if( isset($registro['nome']) ) {
                 $resp['nome'] = utf8_encode($registro['nome']);
             }
+            
+            //Gera a notificação
+            Core_Notificacao::adicionarMensagem("Registro salvo com sucesso", "success");
         } else {
+            
             //Repostas
             $resp ["status"] = "fail";
             $resp ["msgErro"] = $this->_model->msgErro;
+            
+            //Gera a notificação
+            Core_Notificacao::adicionarMensagem("Erro ao salvar o registro", "error");
+            if( APPLICATION_ENV == "development" ) {
+                Core_Notificacao::adicionarMensagem($this->_model->msgErro, "error");
+            }
         }
+        
         if( !$return ) {
             echo json_encode($resp);
         } else {
@@ -131,16 +147,18 @@ class AbstractController extends Zend_Controller_Action {
         }
 
         //Exclui o registro
-        $this->_model->deleteById($id);
+        $rs = $this->_model->deleteById($id);
         
-        //Se a exclusão for bem sucedida remove a imagem
-        if( isset($imagem) ) {
-            Core_Global::removeFile($imagem);
-        }
+        if( $rs ) {
+            //Se a exclusão for bem sucedida remove a imagem
+            if( isset($imagem) ) {
+                Core_Global::removeFile($imagem);
+            }
 
-        //Reposta
-        $resp = array("status" => "success");
-        echo json_encode($resp);
+            //Reposta
+            $resp = array("status" => "success", "msg" => "Registro removido com sucesso");
+            echo json_encode($resp);
+        }
     }
 
     /**
@@ -226,6 +244,26 @@ class AbstractController extends Zend_Controller_Action {
     public function voltar() {
         echo "<script>history.go(-1);</script>";
         die;
+    }
+    
+    /**
+     * Adiciona um breadcrumb
+     */
+    public function addBreadcrumb($label, $link = "") {
+                
+        //Inicia o breadcrumb
+        if( !isset($this->view->breadcrumbs) ) {
+            $this->view->breadcrumbs = array();
+            $this->view->breadcrumbs = array(
+                array("label" => "Home", "link" => "/")
+            );
+        }
+        
+        //Adiciona o item
+        $this->view->breadcrumbs[] = array(
+            "label" => $label,
+            "link" => $link
+        );
     }
     
 }

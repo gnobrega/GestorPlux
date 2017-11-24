@@ -14,6 +14,9 @@ class UsuarioController extends AbstractController {
         $this->_model = new Model_Usuario();
                 
         parent::__construct($request, $response, $invokeArgs);
+        
+        //Breadcrumb
+        $this->addBreadcrumb("Usuários", "/usuario");
     }
 
 
@@ -21,13 +24,7 @@ class UsuarioController extends AbstractController {
      * Login
      */
     public function loginAction() {
-        
-        //Cabeçalho da página
-        $this->view->header = array (
-            "categoria" => "",
-            "acao" => "Login",
-            "iconClass" => "fa fa-lock"
-        );
+        $this->_helper->layout->setLayout("basic");
     }
     
     /**
@@ -62,13 +59,7 @@ class UsuarioController extends AbstractController {
      * Gestão de usuários
      */
     public function indexAction() {
-        //Cabeçalho da página
-        $this->view->header = array (
-            "categoria" => "Usuários",
-            "acao" => "Lista",
-            "iconClass" => "fa fa-users"
-        );
-        
+
         //Gera a tabela
         $this->view->grid = new Core_Grid('usuario');
         $this->view->grid->addColumn("Id", "id");
@@ -79,116 +70,87 @@ class UsuarioController extends AbstractController {
      * Cadastra um novo registro
      */
     public function cadastrarAction() {
-        $this->view->titulo = "Cadastro de usuário";
-        $this->view->actionSave =  "/usuario/salvar";
+        
+        //Breadcrumb
+        $this->addBreadcrumb("Cadastro");
+        
+        //Monta o formulário
+        $this->montarForm();
         
         //Renderiza a view
         $this->renderScript('usuario/form.phtml');
+    }
+    
+    /**
+     * Monta o formulário
+     */
+    public function montarForm($registro = array()) {
+        
+        $this->view->form = new Core_Form("/usuario/salvar");
+        $this->view->form->setData($registro);
+        
+        //Id
+        if( isset($registro['id']) ) {
+            //Senha
+            $fieldId = $this->view->form->addField(Core_Form_Field::$TYPE_HIDDEN)
+                    ->setName("_id");
+        }
+        
+        //Nome
+        $fieldName = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_nome")
+                ->setLabel("Nome completo")
+                ->setRequired(true)
+                ->setAutofocus(true);
+        
+        //Login
+        $fieldLogin = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_login")
+                ->setLabel("Login")
+                ->setRequired(true);
+        
+        //Perfil
+        $fieldLogin = $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
+                ->setName("perfil")
+                ->setLabel("Perfil")
+                ->setRequired(true);
+        
+        //Senha
+        $fieldSenha = $this->view->form->addField(Core_Form_Field::$TYPE_PASSWORD)
+                ->setName("_senha")
+                ->setLabel("Senha");
+        if( isset($registro['id']) ) {
+            $fieldSenha->setPlaceholder("Mantenha esse campo em branco para preservar a senha");
+        }
     }
     
     /**
      * Método Editar
      */
     public function editarAction() {
-        $this->view->titulo = "Edição de usuário";
-        $this->view->actionSave = "/usuario/salvar";
+        
+        //Breadcrumb
+        $this->addBreadcrumb("Edição");
         
         //Carrega os dados
-        $this->view->registro = $this->_model->find($this->getParam('id'))->current()->toArray();
-        Core_Global::encodeListUtf($this->view->registro);
+        $registro = $this->_model->find($this->getParam('id'))->current()->toArray();
+        Core_Global::encodeListUtf($registro);
+        unset($registro['senha']);
         
-        //Carrega as relações com os clientes
-        $mdlUsuarioCliente = new Model_Generic('usuario_cliente');
-        $lstUsuarioCliente = $mdlUsuarioCliente->fetchAll("id_usuario = " . $this->getParam('id'))->toArray();
-        $this->view->lstIdCliente = array();
-        foreach( $lstUsuarioCliente as $usuarioCliente ) {
-            $this->view->lstIdCliente[] = $usuarioCliente['id_cliente'];
-        }
+        //Monta o formulário
+        $this->montarForm($registro);
         
         //Renderiza a view
         $this->renderScript('usuario/form.phtml');
     }
     
     public function salvarAction($return = false) {
-        if( isset($_POST['_id_cliente']) ) {
-            $lstIdClientes = $_POST['_id_cliente'];
-            unset($_POST['_id_cliente']);
-        }
         if( $_POST['_senha'] ) {
             $_POST['_senha'] = sha1(md5($_POST['_senha']));
         } else {
             unset($_POST['_senha']);
         }
         $rs = parent::salvarAction(true);
-        $idUsuario = $rs['id'];
-        
-        //Relaciona com os clientes
-        $mdlUsuarioCliente = new Model_Generic('usuario_cliente');
-        $mdlUsuarioCliente->delete("id_usuario = " . $idUsuario);
-        if( isset($lstIdClientes) ) {
-            foreach( $lstIdClientes as $idCliente ) {
-                $mdlUsuarioCliente->insert(array(
-                    "id_usuario" => $idUsuario,
-                    "id_cliente" => $idCliente
-                ));
-            }
-        }
-        echo json_encode($rs);
-    }
-    
-    /**
-     * Google Authenticator
-     */
-    public function googleAuthAction() {
-        //Cabeçalho da página
-        $this->view->header = array (
-            "categoria" => "2 etapas",
-            "acao" => "Login",
-            "iconClass" => "fa fa-lock"
-        );
-    }
-    
-    /**
-     * Verifica o código do Google Authenticator
-     */
-    public function verifyGoogleAuthAction() {
-        if( !$_POST['codigo'] ) {
-            throw new Exception("Código não informado");
-        }
-        $code = str_replace("-", "", $_POST['codigo']);
-        
-        //Válida o código enviado
-        require APPLICATION_PATH . "/../library/GoogleAuthenticator/vendor/autoload.php" ; 
-        $ga = new PHPGangsta_GoogleAuthenticator();
-        $checkResult = $ga->verifyCode(GOOGLE_AUTHENTICATOR_SECRET, $code, 2);
-        
-        if( $checkResult || APPLICATION_ENV == "development" ) {
-            
-            //Sucesso
-            $sesUsuario = new Zend_Session_Namespace('usuario');
-            $sesUsuario->googleAuthVerify = true;
-            $this->redirect("/");
-        } else {
-            Core_Notificacao::adicionarMensagem("Código inválido", "warning");
-            $this->redirect("/usuario/google-auth");
-        }
-        die;
-    }
-    
-    /**
-     * Gera o QR Code
-     */
-    public function googleAuthQrcodeAction() {
-
-        //Google Authenticator
-        if( APPLICATION_ENV == "development" ) {
-            require APPLICATION_PATH . "/../library/GoogleAuthenticator/vendor/autoload.php" ; 
-            $ga = new PHPGangsta_GoogleAuthenticator();
-            $website = 'http://gestor.wikipix.com.br';
-            $title = 'MarkTv';
-            $qrCodeUrl = $ga->getQRCodeGoogleUrl($title, GOOGLE_AUTHENTICATOR_SECRET,$website);
-            echo $qrCodeUrl;
-        }
-        die;
+        $this->redirect("/usuario");
     }
 }

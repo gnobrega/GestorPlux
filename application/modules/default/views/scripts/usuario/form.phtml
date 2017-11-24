@@ -1,76 +1,24 @@
+<!-- Content Header (Page header) -->
+<?php echo $this->page()->header("Cadastro de usuários") ?>
 
-<!-- Modal -->
-<div class="modal modal-form fade" id="modalEntity" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
 
-            <!-- form start -->
-            <form id="form-registro" method="post" action="<?php echo $this->actionSave ?>" ajax="true">
-
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel"><?php echo $this->titulo ?></h4>
-                </div>
-                <div class="modal-body">
-
-                    <div class="box-body">
-
-                        <!-- Campo id -->
-                        <?php if (isset($this->registro['id'])): ?>
-                            <div class="form-group">
-                                <input type="hidden" name="_id" value="<?php echo @$this->registro['id'] ?>" >
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Campo nome -->
-                        <div class="form-group">
-                            <label for="campoNome">* Nome</label>
-                            <input name="_nome" type="text" class="form-control" id="campoNome" required value="<?php echo @$this->registro['nome'] ?>" autofocus="true" />
-                        </div>
-                        
-                        <!-- Campo login -->
-                        <div class="form-group">
-                            <label for="campoLogin">* Login</label>
-                            <input name="_login" type="text" class="form-control" id="campoLogin" required value="<?php echo @$this->registro['login'] ?>" />
-                        </div>
-                        
-                        <!-- Campo perfil -->
-                        <div class="form-group">
-                            <label for="campoPerfil">* Perfil</label>
-                            <?php echo $this->Component()->combo('perfil', array('value'=>@$this->registro['id_perfil'], 'required'=>true)); ?>
-                        </div>
-                        
-                        <!-- Campo cliente -->
-                        <div class="form-group">
-                            <label for="campoCliente">Cliente</label>
-                            <?php echo $this->Component()->combo('cliente', array('firstNull'=>false, 'multiple'=>true, 'value'=>@$this->lstIdCliente)); ?>
-                        </div>
-                        
-                        <!-- Campo senha -->
-                        <div class="form-group">
-                            <label for="campoSenha">Senha</label>
-                            <input name="_senha" type="password" class="form-control" id="campoSenha" />
-                        </div>
-
-                    </div><!-- /.box-body -->
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary btn-salvar">Salvar</button>
-                </div>
-
-            </form>
-
+<div class="row">
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Formulário <small>Preencha todos os campos obrigatórios</small></h5>
+            </div>
+            <div class="ibox-content">
+                <?php
+                    $this->form->render();
+                ?>
+            </div>
         </div>
     </div>
 </div>
+
 <script>
 
-    //Carrega a modal
-    $('#modalEntity').modal();
-    
     //Configurações default
     Form.init("form-registro");
-
 </script>

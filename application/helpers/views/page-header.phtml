@@ -1,3 +1,21 @@
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2><?php echo $this->headerTitle; ?></h2>
+        <ol class="breadcrumb">
+            <?php
+                foreach( $this->breadcrumbs as $b => $breadcrumb ) {
+                    if( $b < ( count($this->breadcrumbs) - 1 ) ) {
+                        echo "<li><a href=\"{$breadcrumb['link']}\">{$breadcrumb['label']}</a></li>";
+                    } else {
+                        echo "<li><strong>{$breadcrumb['label']}</strong></li>";
+                    }
+                }
+            ?>
+        </ol>
+    </div>
+</div>
+
+
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <h1>

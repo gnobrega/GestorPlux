@@ -6,7 +6,8 @@ function init() {
     $(document).ready(function () {
 
         //Ação do botão voltar
-        $('.btn-voltar').click(function () {
+        $('.btn-voltar').click(function (e) {
+            e.preventDefault();
             history.go(-1);
         });
 
@@ -17,63 +18,11 @@ function init() {
             }
         });
     });
-
+    
+    //Configuração do Toastr
+    toastr.options.timeOut = 10000;
 }
 init();
-
-/**
- * Sistema de mensagens
- * Types: success, info, warning, danger
- */
-function notification(msg, type) {
-    var container = $('div#dv-notification');
-    container.fadeOut();
-
-    //Tipo padrão
-    if (!type) {
-        type = "info";
-    }
-
-    //Seleciona o icone
-    var icon = 'info';
-    var title = 'Info!';
-    switch (type) {
-        case 'success':
-            icon = 'fa-check';
-            title = 'Sucesso!';
-            break;
-        case 'warning':
-            icon = 'fa-exclamation';
-            title = 'Falha!';
-            break;
-        case 'danger':
-            icon = 'fa-times';
-            title = 'Erro!';
-            break;
-    }
-    //Icone
-    var html = msg;
-
-    //Insere a mensagem
-    container.attr("class", "");
-    container.addClass("alert alert-" + type);
-    container.html("<i class='fa " + icon + "' />" + html);
-    container.fadeIn();
-    //Close
-    setTimeout(closeNotification, 7000);
-
-    //Topo da página
-    $('html, body').animate({
-        scrollTop: 0
-    }, 200, 'easeInOutCirc');
-}
-/**
- * Oculta uma mensagem
- */
-function closeNotification(cls) {
-    var container = $('div#dv-notification');
-    container.fadeOut();
-}
 
 /**
  * Bloqueia a tela e exibe a mensagem
@@ -101,7 +50,6 @@ function block(unblock) {
  * Exibe uma mensagem de confirmação
  */
 function confirme(msg, callback) {
-    //var msg = "Você tem certeza que deseja excluir esse registro?";
 
     //Limpa outros modais semelhantes
     $('.modal-confirm').remove();
@@ -307,19 +255,5 @@ function getResponse(rs) {
         }
     } else {
         notification(rs.msgErro, 'danger');
-    }
-}
-
-/**
- * Exibe a notificação desktop
- */
-function showNotificationDesktop(msg, link) {
-    Notification.requestPermission();
-    var notification = new Notification("MarkTV", {
-        icon: 'http://marktv.com.br/images/logo-mini.png',
-        body: msg
-    });
-    notification.onclick = function () {
-        window.open("http://gestor.wikipix.com.br" + link);
     }
 }

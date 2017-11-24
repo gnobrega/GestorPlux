@@ -14,7 +14,7 @@ class Core_Grid {
     private $_entity;
     private $_module = 'default';
     public $_config = array();
-    public $_editAjax = 'true';
+    public $_editAjax = 'false';
     public $_actEdit = true;
     public $_actDel = true;
     public $_defaultOrder = array();
@@ -76,7 +76,7 @@ class Core_Grid {
         
         //Table
         $tableDom = $dom->createElement('table');
-        $tableDom->setAttribute("class", "display datagrid");
+        $tableDom->setAttribute("class", "footable table table-stripped toggle-arrow-tiny");
         $tableDom->setAttribute("id", $this->_id);
         $dom->appendChild($tableDom);
         
@@ -105,6 +105,18 @@ class Core_Grid {
         //Exibe o html
         echo (string)$dom->saveHTML();
         echo Core_Global::toJs($this->getScript());
+        
+        //Spinner
+        echo ' 
+            <div class="spiner-example grid-spiner">
+                <div class="sk-spinner sk-spinner-wave">
+                    <div class="sk-rect1"></div>
+                    <div class="sk-rect2"></div>
+                    <div class="sk-rect3"></div>
+                    <div class="sk-rect4"></div>
+                    <div class="sk-rect5"></div>
+                </div>
+            </div>';
     }
     
     /**
@@ -143,6 +155,11 @@ class Core_Grid {
         
         //Carrega a grid
         $cmds[] = "Grid._objGrid = $('#{$this->_id}').DataTable(Grid.config);\n";
+        
+        //Evento após o carregamento
+        $cmds[] = "Grid._objGrid.on('draw', function() {\n";
+        $cmds[] = "$('div.grid-spiner').hide();\n";
+        $cmds[] = "});\n";
         
         //Monta o javascript
         $js = "$(function () {";
@@ -233,7 +250,7 @@ class Core_Grid {
         
         //Edit
         if( $this->_actEdit ) {
-            $html .= "<a href='' title='Editar' class='grid-act grid-act-edit' ajax='{$this->_editAjax}' ><i class='fa fa-pencil'></i></a>";
+            $html .= "<a href='' title='Editar' class='grid-act grid-act-edit' ><i class='fa fa-pencil'></i></a>";
         }
         
         //Del

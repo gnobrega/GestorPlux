@@ -135,31 +135,17 @@ var Grid = {
                 if (typeof URL_EDITAR !== "undefined") {
                     urlEdit = URL_EDITAR + '/id/' + itemId;
                 } else {
-                    urlEdit = '/' + thisGrid._module + '/' + thisGrid._entity + '/editar/id/' + itemId;
+                    urlEdit = '/' + thisGrid._entity + '/editar/id/' + itemId;
                 }
-                
-                //Exclusivo para templates
-                if( typeof TPL != 'undefined' ) {
-                    urlEdit += '/tpl/' + TPL;
-                }
-                
                 $('.container-ajax').load(urlEdit, null, function() {});
             } else {
+                
                 //Default - redirect
                 var itemId = Grid.getItemId($(this));
-                if (typeof URL_EDITAR !== "undefined") {
-                    var params = URL_EDITAR.split('?');
-                    var link = params[0] + "/id/" + itemId;
-                    if( params.length > 1 ) {
-                        link += "?" + params[1];
-                    }
-                } else {
-                    var link = '/' + thisGrid._entity + '/editar/id/' + itemId;
-                }
-                window.location = link;
+                window.location = '/' + thisGrid._entity + '/editar/id/' + itemId;
             }
         });
-        
+                
         //Del
         $( document ).on( 'click', '#'+this._idTable+" a.grid-act-del", function(e) {
             e.preventDefault();
@@ -178,10 +164,35 @@ var Grid = {
             
             //Ok
             if( resp ) {
-                Form.excluir(thisGrid._entity, Grid._currentId, thisGrid._module);
+                Grid.excluir(thisGrid._entity, Grid._currentId, thisGrid._module);
             }
         }
-    }
+    },
+    
+    /**
+     * Exclui um registro (genérico)
+     */
+    excluir: function (entity, id) {
+       block();
+       var urlDel = null;
+       if (typeof URL_EXCLUIR !== "undefined") {
+            urlDel = URL_EXCLUIR;
+        } else {
+            urlDel = '/' + entity + '/excluir';
+        }
+        $.post(urlDel, {id: id}, function (rs) {
+
+            //Sucesso
+            if (rs.status == 'success') {
+                Grid._objGrid.ajax.reload();
+                toastr.success(rs.msg);
+            } else {
+                //Erro
+                toastr.error(rs.msgErro);
+            }
+            block(1);
+        }, 'json');
+    },
 }
 
 

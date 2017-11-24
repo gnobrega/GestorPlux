@@ -1,8 +1,8 @@
 <?php
     $lstMenu = array(
         array('nome' => 'Resumo','icone' => 'fa fa-table','link' => '/default/index/index'),
-        array('nome' => 'Configurações','icone' => 'fa fa-gears','link' => '/default/index/config', 'sub' => array(
-            array('link' => '/usuario', 'nome' => 'Usuários', 'icone'=>'fa fa-angle-double-right'),
+        array('nome' => 'Segurança','icone' => 'fa fa-lock','link' => '/default/index/seguranca', 'sub' => array(
+            array('link' => '/usuario', 'nome' => 'Usuários'),
         )),
     );
     
@@ -19,23 +19,28 @@
                 $autorizado = true;
             }
             
+            //Exibe o menu
             if( $autorizado ) {
                 $class = ( isset($menu['sub']) ) ? 'treeview' : '';
                 $class .= ( $_SERVER['REQUEST_URI'] == $menu['link'] ) ? ' active' : '';
                 
-                //Imprime
                 if( !isset($menu['icone']) ) {
                     $menu['icone'] = '';
                 }
+                
                 echo "  <li class='{$class}'>
                             <a href='{$menu['link']}'>
                                 <i class='{$menu['icone']}'></i>
-                                <span>{$menu['nome']}</span>
-                            </a>";
+                                <span class='nav-label'>{$menu['nome']}</span>";
+                if( isset($menu['sub']) ) {
+                    echo ' <span class="fa arrow">';
+                }
+                                    
+                echo "</a>";
                         
                 //Submenu
                 if( isset($menu['sub']) ) {
-                    echo "  <ul class='treeview-menu'>";
+                    echo "  <ul class='nav nav-second-level'>";
                     loadMenu($menu['sub']);
                     echo "  </ul>";
                 }
@@ -46,26 +51,30 @@
         
     }
 ?>
-
-<aside class="left-side sidebar-offcanvas">
-    <!-- sidebar: style can be found in sidebar.less -->
-    <section class="sidebar">
-        <!-- Sidebar user panel -->
-        <div id="logo-cliente"></div>
-        <div class="user-panel">
-            <div class="pull-left info">
-                <p>Olá, <?php echo Core_Seguranca::getUser()->nome ?></p>
-                  <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
-            </div>
-        </div>
-
-        <!-- sidebar menu: : style can be found in sidebar.less -->
-        <ul class="sidebar-menu">
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul class="nav metismenu" id="side-menu">
+            
+            <!-- Perfil -->
+            <li class="nav-header">
+                <div class="dropdown profile-element">
+                    <a data-toggle="" class="dropdown-toggle" href="javascript:void(0)">
+                        <span class="clear"> 
+                            <span class="block m-t-xs"> 
+                                <strong class="font-bold"><?php echo Core_Seguranca::getUser()->nome . " " . Core_Seguranca::getUser()->sobrenome ?></strong>
+                            </span> 
+                            <span class="text-muted text-xs block"><?php echo Core_Seguranca::getUser()->perfil ?></span> 
+                        </span> 
+                    </a>
+                </div>
+                <div class="logo-element">
+                    IN+
+                </div>
+            </li>
+            
+            <!-- Opções -->
             <?php loadMenu($lstMenu); ?>
+
         </ul>
-
-    </section>
-    <!-- /.sidebar -->
-</aside>
-
-
+    </div>
+</nav>

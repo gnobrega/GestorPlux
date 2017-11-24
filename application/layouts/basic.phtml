@@ -1,0 +1,48 @@
+<?php echo $this->doctype(); ?>
+
+<html lang="pt">
+    <head>
+        <meta charset="utf-8">
+        <?php echo $this->headTitle('Gestor PLUX!')->setSeparator(' - ')->setAutoEscape(false); ?>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- CSS -->
+        <?php
+        echo $this->headLink()
+                ->appendStylesheet($this->baseUrl() . '/css/bootstrap.min.css')
+                ->appendStylesheet($this->baseUrl() . '/resources/font-awesome/css/font-awesome.css')
+                ->appendStylesheet($this->baseUrl() . '/css/animate.css')
+                ->appendStylesheet($this->baseUrl() . '/css/style.css');
+        ?>
+
+        <!-- Scripts -->
+        <?php
+        echo $this->headScript()
+                //Mainly scripts
+                ->appendFile($this->baseUrl() . '/js/jquery-3.1.1.min.js')
+                ->appendFile($this->baseUrl() . '/js/bootstrap.min.js')
+                ->appendFile($this->baseUrl() . '/js/plugins/metisMenu/jquery.metisMenu.js')
+                ->appendFile($this->baseUrl() . '/js/plugins/slimscroll/jquery.slimscroll.min.js')
+                //iCheck
+                ->appendFile($this->baseUrl() . '/js/plugins/iCheck/icheck.min.js')
+                ;
+        ?>
+
+    </head>
+
+    <body class="gray-bg">
+
+        <div class="middle-box text-center loginscreen   animated fadeInDown">
+            <!-- Imprime o conteúdo de cada página -->
+            <?php echo $this->layout()->content; ?>
+            
+            
+        </div>
+
+        <!-- Mainly scripts -->
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <!-- iCheck -->
+        <script src="js/plugins/iCheck/icheck.min.js"></script>
+    </body>
+</html>

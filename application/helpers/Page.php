@@ -16,19 +16,11 @@ class Zend_View_Helper_Page extends Zend_View_Helper_Abstract {
      * Carrega o cabeçalho da página
      * @param sttring $titulo
      */
-    public function header() {
+    public function header($title) {
         
         //Carrega os dados do cliente
         $sesUsuario = new Zend_Session_Namespace('usuario');
-        /*if( isset($sesUsuario->clientes) && isset($sesUsuario->clientes[0]) ) {
-            $clienteId = $sesUsuario->clientes[0];
-            $mdlCliente = new Model_Cliente();
-            $lst = $mdlCliente->find($clienteId)->toArray();
-            if( count($lst) ) {
-                $this->view->cliente = $lst[0];
-            }
-        }*/
-        
+        $this->view->headerTitle = $title;
         return $this->view->render('page-header.phtml');
     }
 

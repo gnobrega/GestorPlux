@@ -27,8 +27,12 @@ class ErrorController extends Zend_Controller_Action
 
 	//Tratamento diferenciado em caso de ajax
         if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            
-            echo json_encode(array('status' => 'fail', 'msgErro' => $errors->exception->getMessage()));
+            if( APPLICATION_ENV == 'development' ) {
+                $msgErro = $errors->exception->getMessage();
+            } else {
+                $msgErro = "Falha na requisição";
+            }
+            echo json_encode(array('status' => 'fail', 'msgErro' => $msgErro));
             die;
         }
     }
