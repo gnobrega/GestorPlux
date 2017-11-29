@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Casse modelo da entidade Usuario
+ * Casse modelo da entidade
  *
  * @author gustavonobrega
  */

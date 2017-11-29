@@ -14,6 +14,8 @@ class AbstractController extends Zend_Controller_Action {
      */
     public $_currentId;
     
+    public $_entity;
+    
     /**
      * Construtur
      */
@@ -69,12 +71,16 @@ class AbstractController extends Zend_Controller_Action {
                 $value = Core_Global::dataIso($value);
             }
             
+            //Verifica se a opção da combo selecionada é Nula
+            if( $value == "[*SELECT_NULL*]") {
+                $value = new Zend_Db_Expr("NULL");
+            }
+            
             //O caracter "_" identifica que é um atributo da entidade
             if (substr($k, 0, 1) == '_') {
                 $attr = substr($k, 1);
                 $registro[$attr] = $value;
             }
-            
         }
 
         //Salva o registro

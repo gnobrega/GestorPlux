@@ -1,0 +1,30 @@
+<!-- Content Header (Page header) -->
+<?php echo $this->page()->header("Cadastro de empresa") ?>
+
+
+<div class="row">
+    
+    <!-- Formulário principal -->
+    <div class="col-lg-8">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Formulário <small>Preencha todos os campos obrigatórios</small></h5>
+            </div>
+            <div class="ibox-content">
+                <?php
+                    $this->form->render();
+                ?>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Formulário principal -->
+    <?php echo $this->Contact()->form() ?>
+    
+</div>
+
+<script>
+
+    //Configurações default
+    Form.init("form-registro");
+</script>

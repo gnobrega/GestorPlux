@@ -36,19 +36,18 @@ abstract class Model_Abstract extends Zend_Db_Table_Abstract {
             
         //Considera os relacionamentos na contagem
         foreach( $fks as $fk ) {
+           
             //Busca o nome da tabela
-            $entityEstrang = substr($fk, 3);
-            $nmModel = 'Model_'.ucfirst($entityEstrang);
-            $mdlEstrang = new $nmModel;
+            $mdlEstrang = $this->getModelFk($fk);
             $tbEstrang = $mdlEstrang->getName();
             $mdlFk[$fk] = $mdlEstrang;
 
             //Cria o join
             $select->joinLeft($tbEstrang, 
-                         $mdlEstrang->getName() .".". $mdlEstrang->getPrimary() . "=" . $this->getName() .".". $mdlEstrang->getPrimary(), 
-                         array());
+                $mdlEstrang->getName() .".". $mdlEstrang->getPrimary() . "=" . $this->getName() .".". $mdlEstrang->getPrimary(), 
+                array());
         }
-            
+
         if( $where ) {
             $select->where($where);
         }
@@ -58,6 +57,22 @@ abstract class Model_Abstract extends Zend_Db_Table_Abstract {
         
         $rs = $adpt->fetchAll($select);
         return $rs[0]['total'];
+    }
+    
+    /**
+     * Recupera o modelo da FK
+     */
+    public function getModelFk($col) {
+        if( strrpos($col, "|") !== false ) {
+            $posSep = strrpos($col, "|");
+            $entityEstrang = substr($col, $posSep+1);
+        } else {
+            $entityEstrang = substr($col, 3);
+        }
+        
+        $nmModel = 'Model_'.ucfirst($entityEstrang);
+        $mdlEstrang = new $nmModel;
+        return $mdlEstrang;
     }
     
     /**
@@ -73,6 +88,7 @@ abstract class Model_Abstract extends Zend_Db_Table_Abstract {
         $cols = array();
         $fks = array();
         $mdlFk = array();
+        
         foreach( $params['columns'] as $i => $col ) {
             //Isola as fks
             if( substr($col['data'], 0, 3) == 'fk_' ) {
@@ -94,17 +110,22 @@ abstract class Model_Abstract extends Zend_Db_Table_Abstract {
 
         //Cria os relacionamentos (fks)
         foreach( $fks as $fk ) {
+            
             //Busca o nome da tabela
-            $entityEstrang = substr($fk, 3);
-            $nmModel = 'Model_'.ucfirst($entityEstrang);
-            $mdlEstrang = new $nmModel;
+            $mdlEstrang = $this->getModelFk($fk);
             $tbEstrang = $mdlEstrang->getName();
             $mdlFk[$fk] = $mdlEstrang;
 
             //Cria o join
+            $colFkName = $mdlEstrang->getPrimary() . "_" . $mdlEstrang->getName();
+            $colFkParams = explode("|", $fk);
+            if( count($colFkParams) > 1 ) {
+                $colFkName = $mdlEstrang->getPrimary() . "_" . substr($colFkParams[0], 3);
+            }
             $query->joinLeft($tbEstrang, 
-                         $mdlEstrang->getName() .".". $mdlEstrang->getPrimary() . "=" . $this->getName() .".". $mdlEstrang->getPrimary() . "_" . $mdlEstrang->getName(), 
-                         array($fk => $mdlEstrang->_label));
+                    $mdlEstrang->getName() .".". $mdlEstrang->getPrimary() 
+                    . "=" . $this->getName() .".". $colFkName, 
+                    array($fk => $mdlEstrang->_label));
         }
         
         //Aplica o filtro
@@ -265,6 +286,7 @@ abstract class Model_Abstract extends Zend_Db_Table_Abstract {
         try {
             if( isset($registro[$this->_pk]) ) {
                 $id = $registro[$this->_pk];
+                
                 //Update
                 $this->update($registro, "{$this->_pk} = {$id}");
             } else {

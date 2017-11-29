@@ -53,16 +53,23 @@ class Core_Grid {
      * @param string $key
      * @param array $attrs
      */
-    public function addColumn($label, $key, $attrs = array()) {
+    public function addColumn($label, $key, $attrs = array(), $table = '') {
         $i = count($this->_columns);
         $this->_columns[$i] = array(
             'key' => $key,
             'label' => $label
         );
         
+        //Faz referência à tabela estrangeira
+        if( $table ) {
+            $this->_columns[$i]['table'] = $table;
+        }
+        
         //Possibilita sobrescrever os atributos
-        foreach( $attrs as $key=>$value) {
-            $this->_columns[$i][$key] = $value;
+        if( $attrs ) {
+            foreach( $attrs as $key=>$value) {
+                $this->_columns[$i][$key] = $value;
+            }    
         }
     }
 
@@ -191,10 +198,16 @@ class Core_Grid {
         //Extrai as colunas
         $cols = array();
         $i = 0;
+        
         foreach( $this->_columns as $k=>$col ) {
             $cols[$i] = array(
                 'data' => $col['key']
             );
+            
+            //Verifica se foi mensionado a tabela estrangeira (apenas quando o nome da coluna fk nao corresponde com o nome da tabela
+            if( isset($col['table']) ) {
+                $cols[$i]['data'] .= "|".$col['table'];
+            }
             
             //Verifica se foi setada como ordenação inicial
             if( isset($col['order']) ) {

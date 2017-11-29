@@ -662,6 +662,18 @@ class Core_Global {
         }
         return $merge;
     }
+    
+    /**
+     * Recupera a url da action
+     */
+    public static function getUriAction() {
+        $request = Zend_Controller_Front::getInstance()->getRequest();
+        $module = $request->getModuleName();
+        $controller = $request->getControllerName();
+        $action = $request->getActionName();
+        $uriAction = "/" . $module . "/" . $controller . "/" . $action;
+        return $uriAction;
+    }
 }
 
 ?>

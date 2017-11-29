@@ -59,7 +59,7 @@ function confirme(msg, callback) {
     modalConfirm.addClass('modal fade modal-confirm');
     modalConfirm.attr('tabindex', '4');
     modalConfirm.html('<div class="modal-dialog">\n\
-        <div class="modal-content">\n\
+        <div class="modal-content animated flipInY">\n\
           <div class="modal-header">\n\
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\n\
             <h4 class="modal-title">Atenção</h4>\n\

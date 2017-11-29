@@ -26,20 +26,16 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
      */
     public function combo($entity, $attrs = array()) {
         $module = 'default';
-
-        //Separa o nome do módulo e da entidade
-        if( strrpos($entity, '_') !== FALSE ) {
-            $pos = strrpos($entity, '_');
-            $module = substr($entity, 0, $pos);
-            $entity = substr($entity, $pos + 1);
-        }
         
         //Carrega a lista de registros
-        if( $module == 'default' ) {
-            $nmModel = 'Model_' . ucfirst($entity);
-        } else {
-            $nmModel = ucfirst($module) . '_Model_' . ucfirst($entity);
+        $nmModel = 'Model_' . ucfirst($entity);
+        
+        //Trata os nomes compostos
+        if( strrpos($entity, "_") !== false ) {
+            $entitySplit = explode("_", $entity);
+            $nmModel = "Model_" . ucfirst($entitySplit[0]) . ucfirst($entitySplit[1]);
         }
+        
         $this->_model = new $nmModel;
         $this->view->comboConfig = array();
         $where = ( isset($attrs['where']) ) ? $attrs['where'] : null;
@@ -52,7 +48,6 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
         $this->view->comboConfig['pk'] = $this->_model->getPrimary();
         $this->view->comboConfig['firstNull'] = true;
         $this->view->comboConfig['entity'] = $entity;
-        
         //Altera o nome do campos para as combos Multi
         if( isset($attrs['multiple']) ) {
             $this->view->comboConfig['name'] .= '[]';
@@ -62,7 +57,7 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
         foreach( $attrs as $attr=>$val ) {
             $this->view->comboConfig[$attr] = $val;
         }
-        
+
         //Html
         return $this->view->render('component-combo.phtml');
     }
@@ -203,10 +198,11 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
      * @param string $entity
      * @param array $attrs Sobrepões os atributos
      */
-    public function comboConstant($constant, $attrs) {
+    public function comboConstant($constant, $name, $attrs = array()) {
         $data = Constants::get($constant);
         $this->view->comboConfig = array();
         $this->view->comboConfig['data'] = array();
+        $attrs['name'] = $name;
         foreach( $data as $i => $item ) {
             $this->view->comboConfig['data'][] = array(
                 "pk" => $i,
@@ -217,7 +213,7 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
         $this->view->comboConfig['firstNull']   = ( isset($attrs['firstNull']) ) ? $attrs['firstNull'] : true;
         $this->view->comboConfig['name']        = $attrs['name'];
         $this->view->comboConfig['label']       = 'label';
-        $this->view->comboConfig['value']       = $attrs['value'];
+        $this->view->comboConfig['value']       = @$attrs['value'];
         $this->view->comboConfig['class']       = 'form-control';
         $this->view->comboConfig['pk']          = 'pk';
         

@@ -1,0 +1,24 @@
+<!-- Content Header (Page header) -->
+<?php echo $this->page()->header("Cadastro de canal") ?>
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Formulário <small>Preencha todos os campos obrigatórios</small></h5>
+            </div>
+            <div class="ibox-content">
+                <?php
+                    $this->form->render();
+                ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    //Configurações default
+    Form.init("form-registro");
+</script>

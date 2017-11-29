@@ -11,6 +11,7 @@ var Form = {
         $('input.phone').mask("(99) 9999-9999?9");
         $('input.cep').mask("99999-999");
         $('input.time').mask("99:99");
+        $('input.cnpj').mask("999.999.999/999-99");
         $('input.date').datepicker({
             format: 'dd/mm/yyyy',
             language: 'pt'

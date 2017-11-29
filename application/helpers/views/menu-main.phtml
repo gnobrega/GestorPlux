@@ -1,47 +1,47 @@
 <?php
-    $lstMenu = array(
-        array('nome' => 'Resumo','icone' => 'fa fa-table','link' => '/default/index/index'),
-        array('nome' => 'Segurança','icone' => 'fa fa-lock','link' => '/default/index/seguranca', 'sub' => array(
-            array('link' => '/usuario', 'nome' => 'Usuários'),
-        )),
-    );
+    //Recupera os menus
+    $menuItens = $this->mainMenu->getItens();
     
     //Carrega os menus
-    function loadMenu( $lstMenu ) {
+    function loadMenu( $menuItens ) {
         
-        foreach( $lstMenu as $menu ) {
+        foreach( $menuItens as $item ) {
             
             //Checa o acesso
-            if( isset($menu['link']) ) {
-                $autorizado = Core_Seguranca::check($menu['link'], Core_Seguranca::getUser()->idPerfil);
+            if( isset($item->link) ) {
+                $autorizado = Core_Seguranca::check($item->link, Core_Seguranca::getUser()->idPerfil);
             } else {
-                $menu['link'] = '';
+                $item->link = '';
                 $autorizado = true;
             }
             
             //Exibe o menu
             if( $autorizado ) {
-                $class = ( isset($menu['sub']) ) ? 'treeview' : '';
-                $class .= ( $_SERVER['REQUEST_URI'] == $menu['link'] ) ? ' active' : '';
-                
-                if( !isset($menu['icone']) ) {
-                    $menu['icone'] = '';
+                $class = "";
+                if( $item->isActive() ) {
+                    $class = "active";
                 }
                 
+                //Ícone
+                if( !isset($item->icone) ) {
+                    $item->icone = '';
+                }
+                
+                //ul li
                 echo "  <li class='{$class}'>
-                            <a href='{$menu['link']}'>
-                                <i class='{$menu['icone']}'></i>
-                                <span class='nav-label'>{$menu['nome']}</span>";
-                if( isset($menu['sub']) ) {
+                            <a href='{$item->action}'>
+                                <i class='{$item->icon}'></i>
+                                <span class='nav-label'>{$item->name}</span>";
+                if( isset($item->sub) ) {
                     echo ' <span class="fa arrow">';
                 }
                                     
                 echo "</a>";
                         
                 //Submenu
-                if( isset($menu['sub']) ) {
+                if( count($item->getSubitens()) ) {
                     echo "  <ul class='nav nav-second-level'>";
-                    loadMenu($menu['sub']);
+                    loadMenu($item->getSubitens());
                     echo "  </ul>";
                 }
                                 
@@ -73,7 +73,7 @@
             </li>
             
             <!-- Opções -->
-            <?php loadMenu($lstMenu); ?>
+            <?php loadMenu($menuItens); ?>
 
         </ul>
     </div>

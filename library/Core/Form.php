@@ -36,6 +36,9 @@ class Core_Form {
             case Core_Form_Field::$TYPE_HIDDEN:
                 $field = new Core_Form_Field_Hidden();
                 break;
+            case Core_Form_Field::$TYPE_RADIO:
+                $field = new Core_Form_Field_Radio();
+                break;
             default:
                 throw new Exception("Tipo de campo de formulário inválido ($type)");
         }
@@ -55,6 +58,11 @@ class Core_Form {
         
         //Recupera o código html dos campos
         foreach( $this->_fields as $field ) {
+            
+            //Autopreenche os campos
+            $field->autoLoadData();
+            
+            //Html
             $html .= $field->getHtml();
         }
         
@@ -104,11 +112,13 @@ class Core_Form_Field {
     public static $TYPE_SELECT = "TYPE_SELECT";
     public static $TYPE_PASSWORD = "TYPE_PASSWORD";
     public static $TYPE_HIDDEN = "TYPE_HIDDEN";
+    public static $TYPE_RADIO = "TYPE_RADIO";
     public $_id;
     public $_name;
     public $_label;
     public $_attrs = array();
     public $_form;
+    public $_class = "form-control";
     
     /**
      * Construtor
@@ -122,8 +132,16 @@ class Core_Form_Field {
     public function setName($name) {
         $this->_name = $name;
         $this->_id = "input-{$name}-".rand(0, 1000);
+
+        return $this;
+    }
+    
+    /**
+     * Preenche o valor do campo
+     */
+    public function autoLoadData() {
         $data = $this->_form->getData();
-        $colName = substr($name, 1);
+        $colName = substr($this->_name, 1);
 
         //Verifica se já possui o valor do campo disponível
         if( isset($data[$colName]) ) {
@@ -131,7 +149,6 @@ class Core_Form_Field {
                 $this->_attrs['value'] = $data[$colName];
             }
         }
-        return $this;
     }
     
     /**
@@ -146,6 +163,14 @@ class Core_Form_Field {
      */
     public function setLabel($label) {
         $this->_label = $label;
+        return $this;
+    }
+    
+    /**
+     * Seta o valor
+     */
+    public function setValue($value) {
+        $this->_value = $value;
         return $this;
     }
     
@@ -189,6 +214,14 @@ class Core_Form_Field {
     public function setForm($form) {
         $this->_form = $form;
     }
+    
+    /**
+     * Adiciona uma classe nova
+     */
+    public function addClass($class) {
+        $this->_class .= " " . $class;
+        return $this;
+    }
 }
 
 /**
@@ -207,7 +240,7 @@ class Core_Form_Field_Text extends Core_Form_Field {
         foreach( $this->_attrs as $key=>$value ) {
             $htmlField .= "$key = '$value' ";
         }
-        $htmlField .= "type='$this->_type' class='form-control' name='{$this->_name}' />";
+        $htmlField .= "type='$this->_type' class='$this->_class' name='{$this->_name}' />";
         $html = $this->getHtmlContainer($htmlField);
         
         return $html;
@@ -219,6 +252,7 @@ class Core_Form_Field_Text extends Core_Form_Field {
  */
 class Core_Form_Field_Select extends Core_Form_Field {
     private $_table;
+    private $_where;
     
     /**
      * Gera o html do campo
@@ -235,8 +269,19 @@ class Core_Form_Field_Select extends Core_Form_Field {
             $this->_attrs['value'] = $data[$colName];
         }
         
+        //Nome personalizado para o campo
+        if( $this->_table != $this->_name && $this->_name != '' ) {
+            $this->_attrs['name'] = $this->_name;
+        }
+        
+        //Filtra as opções do campo
+        if( $this->_where ) {
+            $this->_attrs['where'] = $this->_where;
+        }
+        
         //Html
-        $htmlField = Zend_Layout::getMvcInstance()->getView()->Component()->combo($this->_table, $this->_attrs);
+        $view = Zend_Layout::getMvcInstance()->getView();
+        $htmlField = $view->Component()->combo($this->_table, $this->_attrs);
         $html = $this->getHtmlContainer($htmlField);
         
         return $html;
@@ -248,6 +293,13 @@ class Core_Form_Field_Select extends Core_Form_Field {
     public function setTable($table) {
         $this->_table = $table;
         return $this;
+    }
+    
+    /**
+     * Exclui itens específicos da lista
+     */
+    public function exclude( $ids ) {
+        $this->_where = "id NOT IN (" . implode(",", $ids) . ")";
     }
 }
 
@@ -283,5 +335,50 @@ class Core_Form_Field_Hidden extends Core_Form_Field_Text {
         
         //Não gera container
         return $htmlField;
+    }
+}
+
+/**
+ * Campos de múltiplas opções
+ */
+class Core_Form_Field_Multi extends Core_Form_Field {
+    protected $_itens = array();
+    
+    /**
+     * Adiciona um item à lista
+     */
+    public function addItem($label, $value) {
+        $this->_itens[$value] = $label;
+        return $this;
+    }
+}
+
+/**
+ * Campo Radio Button
+ */
+class Core_Form_Field_Radio extends Core_Form_Field_Multi {
+    protected $_type = "radio";
+    
+    /**
+     * Gera o html do campo
+     */
+    public function getHtml() {
+        
+        $htmlField = "";
+        foreach( $this->_itens as $value => $label ) {
+            $itemId = "item-{$this->_name}-{$value}";
+            $checked = '';
+            if( $value == $this->_value ) {
+                $checked = 'CHECKED';
+            }
+            $htmlField .= 
+                "<div class='radio radio-inline'>
+                    <input type='radio' id='{$itemId}' value='{$value}' name='{$this->_name}' {$checked}/>
+                    <label for='{$itemId}'> {$label} </label>
+                </div>";
+        }
+        $html = $this->getHtmlContainer($htmlField);
+        
+        return $html;
     }
 }
