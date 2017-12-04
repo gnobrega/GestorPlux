@@ -74,6 +74,12 @@ class PontoController extends AbstractController {
                 ->setName("_id_empresa")
                 ->setRequired(true)
                 ->setLabel("Empresa");
+        
+        //Canais
+        $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
+                ->setTable("canal")
+                ->setName("_id_canal")
+                ->setLabel("Canal");
     }
     
     /**
@@ -95,8 +101,23 @@ class PontoController extends AbstractController {
         $this->renderScript($this->_entity.'/form.phtml');
     }
     
+    /**
+     * Persiste o registro no banco
+     */
     public function salvarAction($return = false) {
         $rs = parent::salvarAction(true);
         $this->redirect("/".$this->_entity);
+    }
+    
+    /**
+     * Retorna a lista em formato de Json
+     */
+    public function listJsonAction() {
+        $pontoModel = new Model_Ponto();
+        $where = ( isset($_GET['filter']) ) ? $_GET['filter'] : null;
+        $lst = $pontoModel->fetchAll($where)->toArray();
+        Core_Global::encodeListUtf($lst, true);
+        echo json_encode($lst);
+        die;
     }
 }

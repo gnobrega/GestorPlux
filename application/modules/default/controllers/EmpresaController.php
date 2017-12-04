@@ -70,6 +70,7 @@ class EmpresaController extends AbstractController {
         $campoMatriz = $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
                 ->setTable("empresa")
                 ->setName("_id_empresa_matriz")
+                ->setFilter("id_empresa_matriz IS NULL")
                 ->setLabel("Empresa Matriz");
         if( isset($registro['id']) ) {
             $campoMatriz->exclude(array($registro['id']));
@@ -106,12 +107,32 @@ class EmpresaController extends AbstractController {
                 ->addItem("Sim", 1)
                 ->addItem("Não", 0);
         
+        //Agências
+        $campoAgencias = $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
+                ->setTable("empresa")
+                ->setFilter("agencia = 1")
+                ->setName("agencias[]")
+                ->setLabel("Atendido por")
+                ->setMultiple(true);
+        if( isset($registro['agencias']) ) {
+            $campoAgencias->setValue($registro['agencias']);
+        }
+        
         //Exibe publicidade
         $exibPubValor = ( isset($registro['exibe_publicidade']) ) ? $registro['exibe_publicidade'] : '0';
         $this->view->form->addField(Core_Form_Field::$TYPE_RADIO)
                 ->setName("_exibe_publicidade")
                 ->setLabel("Exibe publicidade?")
                 ->setValue($exibPubValor)
+                ->addItem("Sim", 1)
+                ->addItem("Não", 0);
+                
+        //É uma agência
+        $agencia = ( isset($registro['agencia']) ) ? $registro['agencia'] : '0';
+        $this->view->form->addField(Core_Form_Field::$TYPE_RADIO)
+                ->setName("_agencia")
+                ->setLabel("É uma agência?")
+                ->setValue($agencia)
                 ->addItem("Sim", 1)
                 ->addItem("Não", 0);
     }
@@ -123,10 +144,17 @@ class EmpresaController extends AbstractController {
         
         //Breadcrumb
         $this->addBreadcrumb("Edição");
-        
+                
         //Carrega os dados
         $registro = $this->_model->find($this->getParam('id'))->current()->toArray();
         Core_Global::encodeListUtf($registro);
+        
+        //Carrega os relacionamentos com as agências
+        $modRel = new Model_Generic("empresa_agencia");
+        $empAgencias = $modRel->fetchAll("id_empresa_cliente = " . $this->getParam('id'))->toArray();
+        foreach( $empAgencias as $empAgencia ) {
+            $registro['agencias'][] = $empAgencia['id_empresa_agencia'];
+        }
         
         //Monta o formulário
         $this->montarForm($registro);
@@ -137,6 +165,20 @@ class EmpresaController extends AbstractController {
     
     public function salvarAction($return = false) {
         $rs = parent::salvarAction(true);
+        
+        //Cria o relacionamento com as agências
+        $modRel = new Model_Generic("empresa_agencia");
+        $modRel->delete("id_empresa_cliente = " . $rs['id']);
+        if( isset($_POST['agencias']) ) {
+            foreach( $_POST['agencias'] as $agenciaId ) {
+                $empAgencia = array(
+                    "id_empresa_agencia" => $agenciaId,
+                    "id_empresa_cliente" => $rs['id']
+                );
+                $modRel->insert($empAgencia);
+            }
+        }
+        
         $this->redirect("/".$this->_entity);
     }
 }

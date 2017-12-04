@@ -16,6 +16,7 @@ var Form = {
             format: 'dd/mm/yyyy',
             language: 'pt'
         });
+        $('.chosen-select').chosen();
     },
     
     /**

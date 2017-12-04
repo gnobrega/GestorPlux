@@ -18,7 +18,46 @@
 </div>
 
 <script>
+    var pontosId = null;
+    <?php
+        if( isset($this->registro['pontos']) ) {
+            echo "pontosId = '" .implode(",", $this->registro['pontos']) . "'\n";
+            echo "pontosId = pontosId.split(',');\n";
+        }
+    ?>
 
     //Configurações default
     Form.init("form-registro");
+    
+    //Preenche a combo de pontos
+    $(function() {
+        $("select[name='canais[]']").on("change", function() {
+            var canaisId = $("select[name='canais[]']").val();
+            $("select[name='pontos[]']").html("");
+            if( canaisId.length ) {
+                var canaisIdStr = canaisId.join(",");
+                var options = "";
+                $.get("/ponto/list-json", {filter:"id_canal IN ("+canaisIdStr+")"}, function(pontos) {
+                    for( i in pontos ) {
+                        options += "<option value='"+pontos[i].id+"'>"+pontos[i].nome+"</option>";
+                    }
+                    $("select[name='pontos[]']").html(options);
+                    $("select[name='pontos[]']").chosen("destroy");
+                    $("select[name='pontos[]']").chosen();
+                    
+                    //Seta os pontos já salvos
+                    for( i in pontosId ) {
+                        var pontoId = pontosId[i];
+                        $("select[name='pontos[]'] option[value="+pontoId+"]").prop("selected", true);
+                        $("select[name='pontos[]']").chosen("destroy");
+                        $("select[name='pontos[]']").chosen();
+                    }
+                }, 'json');
+            } else {
+                $("select[name='pontos[]']").chosen("destroy");
+                $("select[name='pontos[]']").chosen();
+            }
+        });
+        $("select[name='canais[]']").trigger("change");
+    });
 </script>

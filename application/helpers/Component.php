@@ -27,27 +27,33 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
     public function combo($entity, $attrs = array()) {
         $module = 'default';
         
-        //Carrega a lista de registros
-        $nmModel = 'Model_' . ucfirst($entity);
-        
-        //Trata os nomes compostos
-        if( strrpos($entity, "_") !== false ) {
-            $entitySplit = explode("_", $entity);
-            $nmModel = "Model_" . ucfirst($entitySplit[0]) . ucfirst($entitySplit[1]);
+        if( $entity ) {
+            //Carrega a lista de registros
+            $nmModel = 'Model_' . ucfirst($entity);
+
+            //Trata os nomes compostos
+            if( strrpos($entity, "_") !== false ) {
+                $entitySplit = explode("_", $entity);
+                $nmModel = "Model_" . ucfirst($entitySplit[0]) . ucfirst($entitySplit[1]);
+            }
+
+            $this->_model = new $nmModel;
+            $this->view->comboConfig = array();
+            $where = ( isset($attrs['where']) ) ? $attrs['where'] : null;
+            
+            //Configuração padrão da combo
+            $this->view->comboConfig['data'] = ( isset($attrs['data']) ) ? $attrs['data'] : $this->_model->loadComboData($where);
+            $this->view->comboConfig['label'] = $this->_model->_label;
+            $this->view->comboConfig['name'] = '_'.$this->_model->getPrimary() . '_' . $this->_model->getName();
+            $this->view->comboConfig['pk'] = $this->_model->getPrimary();
+        } else {
+            $this->view->comboConfig['data'] = array();
         }
-        
-        $this->_model = new $nmModel;
-        $this->view->comboConfig = array();
-        $where = ( isset($attrs['where']) ) ? $attrs['where'] : null;
-        
-        //Configuração padrão da combo
-        $this->view->comboConfig['data'] = ( isset($attrs['data']) ) ? $attrs['data'] : $this->_model->loadComboData($where);
-        $this->view->comboConfig['label'] = $this->_model->_label;
-        $this->view->comboConfig['name'] = '_'.$this->_model->getPrimary() . '_' . $this->_model->getName();
-        $this->view->comboConfig['class'] = 'form-control';
-        $this->view->comboConfig['pk'] = $this->_model->getPrimary();
+
+        $this->view->comboConfig['class'] = 'form-control chosen-select';
         $this->view->comboConfig['firstNull'] = true;
         $this->view->comboConfig['entity'] = $entity;
+        $this->view->comboConfig['data-placeholder'] = '[Selecione]';
         //Altera o nome do campos para as combos Multi
         if( isset($attrs['multiple']) ) {
             $this->view->comboConfig['name'] .= '[]';

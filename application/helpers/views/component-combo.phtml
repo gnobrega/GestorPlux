@@ -9,10 +9,11 @@
     $value      = @$this->comboConfig['value'];
     $required   = ( isset($this->comboConfig['required']) ) ? 'required' : '';
     $multiple   = ( isset($this->comboConfig['multiple']) ) ? 'multiple' : '';
-    $placeholder   = ( isset($this->comboConfig['placeholder']) ) ? $this->comboConfig['placeholder'] : '';
+    $placeholder   = ( isset($this->comboConfig['data-placeholder']) ) ? $this->comboConfig['data-placeholder'] : '';
 
     //Imprime o Html
-    echo "<select name='{$name}' id='combo-{$name}' class='{$class}' {$required} entity='{$entity}' {$multiple} >";
+    echo "<select name='{$name}' id='combo-{$name}' class='{$class}' {$required} "
+    . "data-placeholder='{$placeholder}' entity='{$entity}' pla {$multiple} >";
     
     //Primeiro elemento
     if( $firstNull ) {
@@ -29,13 +30,4 @@
         echo "<option value='{$data[$pk]}' {$selected}>{$data[$label]}</option>";
     }
     echo "</select>";
-
-    //Se for um campo múltiplo, carrega o plugin
-    if( $multiple ) {
-        echo "<script> var opt = {};";
-        if( $placeholder ) {
-            echo "opt.placeholder = '$placeholder';\n";
-        }
-        echo "$(\"select[name='{$name}']\").select2(opt);</script>";
-    }
 ?>

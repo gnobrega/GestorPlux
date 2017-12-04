@@ -27,4 +27,20 @@
 
     //Configurações default
     Form.init("form-registro");
+    
+    $(function() {
+        
+        //Exibe/oculta o campo de agências
+        $("input[name=_anunciante]").on("change", function () {
+            var $containerAgencias = $("select[name='agencias[]']").closest("div.form-group");
+            if( $("input[name=_anunciante]:checked").val() == 1 ) {
+                $containerAgencias.show();
+            } else {
+                $containerAgencias.hide();
+            }
+        });
+        $("input[name=_anunciante]").trigger("change");
+    });
+    
+    
 </script>

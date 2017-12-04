@@ -132,6 +132,16 @@ class Core_Form_Field {
     public function setName($name) {
         $this->_name = $name;
         $this->_id = "input-{$name}-".rand(0, 1000);
+        $this->_attrs['name'] = $name;
+
+        return $this;
+    }
+    
+    /**
+     * Seta o atributo
+     */
+    public function setAttr($key, $val) {
+        $this->_attrs[$key] = $val;
 
         return $this;
     }
@@ -171,6 +181,7 @@ class Core_Form_Field {
      */
     public function setValue($value) {
         $this->_value = $value;
+        $this->_attrs['value'] = $value;
         return $this;
     }
     
@@ -252,7 +263,7 @@ class Core_Form_Field_Text extends Core_Form_Field {
  */
 class Core_Form_Field_Select extends Core_Form_Field {
     private $_table;
-    private $_where;
+    private $_empty = false;
     
     /**
      * Gera o html do campo
@@ -272,13 +283,14 @@ class Core_Form_Field_Select extends Core_Form_Field {
         //Nome personalizado para o campo
         if( $this->_table != $this->_name && $this->_name != '' ) {
             $this->_attrs['name'] = $this->_name;
+
         }
         
-        //Filtra as opções do campo
-        if( $this->_where ) {
-            $this->_attrs['where'] = $this->_where;
+        //Verifica se a combo foi setada como vazia
+        if( $this->_empty ) {
+            $this->_table = null;
         }
-        
+                
         //Html
         $view = Zend_Layout::getMvcInstance()->getView();
         $htmlField = $view->Component()->combo($this->_table, $this->_attrs);
@@ -296,10 +308,39 @@ class Core_Form_Field_Select extends Core_Form_Field {
     }
     
     /**
+     * Define a combo como vazia
+     */
+    public function setEmpty($flag) {
+        $this->_empty = $flag;
+        return $this;
+    }
+    
+    /**
+     * Define um filtro
+     */
+    public function setFilter($where) {
+        $this->_attrs['where'] = $where;
+        return $this;
+    }
+    
+    /**
+     * Habilita a múltipla seleção
+     */
+    public function setMultiple($flag) {
+        $this->_attrs['multiple'] = $flag;
+        return $this;
+    }
+    
+    /**
      * Exclui itens específicos da lista
      */
     public function exclude( $ids ) {
-        $this->_where = "id NOT IN (" . implode(",", $ids) . ")";
+        if( $this->_attrs['where'] ) {
+            $this->_attrs['where'] .= " AND ";
+        } else {
+            $this->_attrs['where'] = "";
+        }
+        $this->_attrs['where'] .= "id NOT IN (" . implode(",", $ids) . ")";
     }
 }
 

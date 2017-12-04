@@ -20,7 +20,9 @@
                 //Datatable
                 ->appendStylesheet($this->baseUrl() . '/resources/datatables/jquery.dataTables.css')
                 //Awesome Bootstrap Checkbox
-                ->appendStylesheet($this->baseUrl() . '/resources/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css');
+                ->appendStylesheet($this->baseUrl() . '/resources/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css')
+                //Chosen
+                ->appendStylesheet($this->baseUrl() . '/resources/chosen/bootstrap-chosen.css');
         ?>
 
         <!-- Scripts -->
@@ -42,6 +44,8 @@
             ->appendFile($this->baseUrl() . '/resources/datepicker/locales/bootstrap-datepicker.pt.js')
             //Toastr
             ->appendFile($this->baseUrl() . '/resources/toastr/toastr.min.js')
+            //Chosen
+            ->appendFile($this->baseUrl() . '/resources/chosen/chosen.jquery.js')
             //Custom and plugin
             ->appendFile($this->baseUrl() . '/js/inspinia.js')
             ->appendFile($this->baseUrl() . '/js/plugins/pace/pace.min.js')
