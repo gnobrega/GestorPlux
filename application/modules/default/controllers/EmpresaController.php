@@ -163,6 +163,9 @@ class EmpresaController extends AbstractController {
         $this->renderScript($this->_entity.'/form.phtml');
     }
     
+    /**
+     * Salva o registro no banco
+     */
     public function salvarAction($return = false) {
         $rs = parent::salvarAction(true);
         
@@ -180,5 +183,30 @@ class EmpresaController extends AbstractController {
         }
         
         $this->redirect("/".$this->_entity);
+    }
+    
+    /**
+     * Carrega as agências que atende um cliente
+     */
+    public function agenciasPorClienteAction() {
+        if( !isset($_POST['id_empresa_cliente']) ) {
+            $this->returnError("Informe o id do cliente");
+            die;
+        }
+        $clienteId = $_POST['id_empresa_cliente'];
+        
+        //Carrega os relacionamento com as agências
+        $mdlRelAgn = new Model_Generic("empresa_agencia");
+        $rels = $mdlRelAgn->fetchAll("id_empresa_cliente = " . $clienteId)->toArray();
+        $agencias = array();
+        foreach( $rels as $rel ) {
+            $rsAgn = $this->_model->find($rel['id_empresa_agencia'])->toArray();
+            if( count($rsAgn) ) {
+                $agencias[] = $rsAgn[0];
+            }
+        }
+        Core_Global::encodeListUtf($agencias, true);
+        $this->returnSuccess(null, $agencias);
+        die;
     }
 }

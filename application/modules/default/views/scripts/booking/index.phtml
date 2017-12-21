@@ -1,0 +1,112 @@
+<!-- Content Header (Page header) -->
+<?php echo $this->page()->header("Criação de Booking") ?>
+
+<!-- Tabs -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="booking-steps">
+            <div class="row">
+                <div class="col-md-3"><button class="btn btn-success" tab="step-form">1. Formulário</button></div>
+                <div class="col-md-3"><button class="btn btn-default disabled" tab="step-photos">2. Seleção de fotos</button></div>
+                <div class="col-md-3"><button class="btn btn-default disabled" tab="step-export">3. Exportação</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row booking-content">
+    <div class="col-md-12">
+
+        <?php
+            //STEP PHOTOS
+            echo $this->render("booking/step-form.phtml");
+            
+            //STEP PHOTOS
+            echo $this->render("booking/step-photos.phtml");
+        ?>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $('.file-box').each(function () {
+            animationHover(this, 'pulse');
+        });
+
+        //Etapas
+        $("div.booking-content").on("click", "div.step-buttons button.btn-back", function (e) {
+                e.preventDefault();
+                if ($(this).hasClass("disabled")) {
+                    return false;
+                }
+                $btnStep = $("div.booking-steps button.btn-success");
+                var step = $btnStep.parent().index();
+                if ($(this).hasClass('btn-next')) {
+                    step++;
+                } else {
+                    step--;
+                }
+                toStep(step);
+            });
+    });
+    
+    //Navega entre as etapas
+    function toStep(step) {
+        var $btnStep = $("div.booking-steps button.btn-success");
+        var $btnNextStep = null;
+        var $btnBack = $("div.step-buttons button.btn-back");
+        var $btnNext = $("div.step-buttons button.btn-next");
+        var totalButtons = $("div.booking-steps button").length;
+
+        disableButton($("div.booking-steps button"));
+        disableButton($btnBack);
+        disableButton($btnNext);
+
+        switch (step) {
+            case 0:
+                $btnNextStep = $("button[tab=step-form]");
+                break;
+            case 1:
+                $btnNextStep = $("button[tab=step-photos]");
+                break;
+            case 2:
+                $btnNextStep = $("button[tab=step-export]");
+                break;
+        }
+
+        enableButton($btnNextStep, "btn-success");
+        if (step < (totalButtons - 1)) {
+            enableButton($btnNext, 'btn-primary');
+        } else {
+            disableButton($btnNext, 'btn-primary');
+        }
+        if (step > 0) {
+            enableButton($btnBack, 'btn-primary');
+        } else {
+            disableButton($btnBack, 'btn-primary');
+        }
+
+        //Exibe/oculta a tela
+        var tab = $btnNextStep.attr("tab");
+        $(".tab-booking").hide();
+        $("#tab-" + tab).show();
+        
+        function disableButton($btn) {
+            $btn.removeClass("btn-success");
+            $btn.removeClass("btn-primary");
+            $btn.addClass("btn-default");
+            $btn.addClass("disabled");
+        }
+
+        function enableButton($btn, cls) {
+            $btn.removeClass("btn-default");
+            $btn.removeClass("disabled");
+            $btn.addClass(cls);
+        }
+        
+        //Chama os eventos da tab
+        if( step == 1 ) {
+            carregarFiltros();
+        }
+    }
+</script>

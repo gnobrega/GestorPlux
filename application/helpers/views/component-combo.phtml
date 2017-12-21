@@ -10,10 +10,21 @@
     $required   = ( isset($this->comboConfig['required']) ) ? 'required' : '';
     $multiple   = ( isset($this->comboConfig['multiple']) ) ? 'multiple' : '';
     $placeholder   = ( isset($this->comboConfig['data-placeholder']) ) ? $this->comboConfig['data-placeholder'] : '';
-
+    $rulesArr   = ( isset($this->comboConfig['rules']) ) ? $this->comboConfig['rules'] : array();
+    $rules = "";
+    if( $required ) {
+        $rules = "data-rule-select-not-null='true'";
+    }
+    foreach( $rulesArr as $ruleAttr => $rule ) {
+        if( $rules ) {
+            $rules .= " ";
+        }
+        $rules .= $ruleAttr . "='$rule'";
+    }
+    
     //Imprime o Html
     echo "<select name='{$name}' id='combo-{$name}' class='{$class}' {$required} "
-    . "data-placeholder='{$placeholder}' entity='{$entity}' pla {$multiple} >";
+    . "data-placeholder='{$placeholder}' entity='{$entity}' $rules {$multiple}>";
     
     //Primeiro elemento
     if( $firstNull ) {

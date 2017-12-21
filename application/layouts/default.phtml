@@ -21,6 +21,8 @@
                 ->appendStylesheet($this->baseUrl() . '/resources/datatables/jquery.dataTables.css')
                 //Awesome Bootstrap Checkbox
                 ->appendStylesheet($this->baseUrl() . '/resources/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css')
+                //Animate
+                ->appendStylesheet($this->baseUrl() . '/css/animate.css')
                 //Chosen
                 ->appendStylesheet($this->baseUrl() . '/resources/chosen/bootstrap-chosen.css');
         ?>
@@ -34,6 +36,7 @@
             ->appendFile($this->baseUrl() . '/js/bootstrap.min.js')
             ->appendFile($this->baseUrl() . '/js/plugins/metisMenu/jquery.metisMenu.js')
             ->appendFile($this->baseUrl() . '/js/plugins/slimscroll/jquery.slimscroll.min.js')
+            ->appendFile($this->baseUrl() . '/js/plugins/jquery.validate.min.js')
             //Datatable
             ->appendFile($this->baseUrl() . '/resources/datatables/js/jquery.dataTables.js')
             ->appendFile($this->baseUrl() . '/resources/datatables/js/dataTables.bootstrap.js')
@@ -41,7 +44,7 @@
             ->appendFile($this->baseUrl() . '/js/plugins/jquery.maskedinput.min.js')
             //Datepicker
             ->appendFile($this->baseUrl() . '/resources/datepicker/bootstrap-datepicker.js')
-            ->appendFile($this->baseUrl() . '/resources/datepicker/locales/bootstrap-datepicker.pt.js')
+            ->appendFile($this->baseUrl() . '/resources/datepicker/locales/bootstrap-datepicker.pt-BR.js')
             //Toastr
             ->appendFile($this->baseUrl() . '/resources/toastr/toastr.min.js')
             //Chosen
@@ -52,6 +55,9 @@
             ->appendFile($this->baseUrl() . '/js/grid.js')
             ->appendFile($this->baseUrl() . '/js/general.js')
             ->appendFile($this->baseUrl() . '/js/form.js');
+        
+            //Javascript inline
+            echo $this->inlineScript();
         ?>
 
     </head>
@@ -102,5 +108,6 @@
         <?php
             Core_Notificacao::exibir();
         ?>
+        
     </body>
 </html>

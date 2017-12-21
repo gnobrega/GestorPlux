@@ -8529,3 +8529,29 @@ table.footable.dataTable thead th {
     margin: 0;
   }
 }
+#wizard.wizard > .content {
+    background: none;
+}
+div.booking-steps {
+    margin: 0 0 40px 0;
+}
+div.booking-steps div.col-md-3:first-child {
+    padding-left: 15px;
+}
+div.booking-steps div.col-md-3 {
+    padding-right: 0;
+    padding-left: 10px;
+    margin: 0;
+}
+div.booking-steps button {
+    margin-right: 10px;
+    width: 100%;
+    text-align: left;
+}
+div.clear-both {
+    clear: both;
+}
+div.chosen-container.chosen-container-multi .chosen-choices .search-field input[type="text"] {
+    padding-left: 8px;
+    color: #777777;
+}

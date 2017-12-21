@@ -17,6 +17,27 @@ var Form = {
             language: 'pt'
         });
         $('.chosen-select').chosen();
+        $('.input-group.date').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            language: "pt-BR",
+            format: 'dd/mm/yyyy'
+        });
+        
+        //Validation
+        var VALIDATION_MSG_REQUIRED = "Esse campo é obrigatório";
+        jQuery.extend(jQuery.validator.messages, {
+            required: VALIDATION_MSG_REQUIRED
+        });
+        $.validator.setDefaults({ ignore: ":hidden:not(.chosen-select)" })
+        $.validator.addMethod('select-not-null', function (value, element, param) {
+            if( value == "[*SELECT_NULL*]" || value == "" ) {
+                return false;
+            } else {
+                return true;
+            }
+        }, VALIDATION_MSG_REQUIRED);
+        $("#"+formId).validate();
     },
     
     /**
@@ -27,8 +48,14 @@ var Form = {
     /**
      * Filtra uma combo a partir da seleção da outra
      */
-    filterCombo: function($combo, $comboParent, attrs) {
-        $comboParent.change(function() {
+    filterCombo: function($combo, $comboParent, url, attrs, autoexec) {
+        function startFilterCombo() {
+            $combo.html("");
+            $combo.trigger("chosen:updated");
+            if( $comboParent.val() == SELECT_VALUE_NULL ) {
+                return false;
+            }
+            
             wait();
             var entity = $combo.attr('entity');
             var filter = {
@@ -40,11 +67,13 @@ var Form = {
             var data = {filter:filter};
             
             //Retorna dados extras
-            if( attrs.extra != undefined ) {
-                data.extra = attrs.extra;
+            if( typeof(attrs) != 'undefined' ) {
+                if( typeof(attrs.extra) != 'undefined' ) {
+                    data.extra = attrs.extra;
+                }
             }
             
-            $.post("/"+entity+"/load-combo", data, function(rs) {
+            $.post(url, data, function(rs) {
                 wait(true);
                 if( rs.status == 'success') {
 
@@ -52,9 +81,11 @@ var Form = {
                     $combo.html('');
 
                     //Adiciona os itens
-                    var $optSelecione = $("<option />").val("").text('[Selecione]');
-                    $combo.append($optSelecione);
-                    
+                    if( !$combo.prop("multiple") ) {
+                        var $optSelecione = $("<option />").val("").text('[Selecione]');
+                        $combo.append($optSelecione);
+                    }
+                                       
                     $.each(rs.data, function() {
                         $combo.append($("<option />").val(this.id).text(this.label));
                         $.each(this, function(k, v) {
@@ -63,13 +94,20 @@ var Form = {
                             }
                         });
                     });
+                    $combo.trigger("chosen:updated");
                     
                     //Se houver callback executa
                     Form.callback();
                 } else {
-                    notification(rs.msgErro, 'danger');
+                    toastr.error(rs.msgErro);
                 }
             }, 'json');
+        }
+        if( autoexec ) {
+            startFilterCombo();
+        }
+        $comboParent.change(function() {
+            startFilterCombo();
         });
     },
     

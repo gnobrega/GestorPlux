@@ -1,4 +1,10 @@
 /**
+ * 
+ * Constantes
+ */
+var SELECT_VALUE_NULL = "[*SELECT_NULL*]";
+
+/**
  * Autoload
  */
 function init() {
@@ -250,10 +256,10 @@ function autoResize($parent, $target) {
 function getResponse(rs) {
     if (rs.status == 'success') {
         if (rs.msg) {
-            notification(rs.msg, 'success');
-            return rs.data;
+            toastr.success(rs.msg);
         }
+        return rs.data;
     } else {
-        notification(rs.msgErro, 'danger');
+        toastr.error(rs.msgErro);
     }
 }

@@ -1,0 +1,223 @@
+<!-- STEP PHOTOS -->
+<div class="tab-booking form-horizontal animated fadeInRight" id="tab-step-photos" style="display:none">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <form id="form-booking-fotos">
+                        <div class="file-manager">
+                            <!--<div>
+                                <label>Ambientes de Veiculação</label> 
+                                <?php echo $this->Component()->combo(null, array("multiple"=>true, "name"=>"ambientes[]")); ?>
+                            </div>
+                            <br />-->
+                            <h5>Período</h5>
+                            <div>
+                                <!--<label>Período</label> -->
+                                <div class="row">
+                                    <div class="col-md-6"><input type="text" class="form-control date" name="dt_inicio" placeholder="Início"></div>
+                                    <div class="col-md-6"><input type="text" class="form-control date" name="dt_fim" placeholder="Fim"></div>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            
+                            <!-- Ambientes -->
+                            <div id="dvFiltroAmbientes" style="display:none">
+                                <h5>Ambientes</h5>
+                                <div id="jstree1"></div>
+
+                                <div class="hr-line-dashed"></div>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-block" id="btnCarregarFotos">Carregar fotos</button>
+                            <div class="clearfix"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Galeria -->
+        <div class="col-lg-9">
+            <div class="ibox float-e-margins" id="ibox-galeria">
+                <div class="ibox-content">
+                    <div class="sk-spinner sk-spinner-wave">
+                        <div class="sk-rect1"></div>
+                        <div class="sk-rect2"></div>
+                        <div class="sk-rect3"></div>
+                        <div class="sk-rect4"></div>
+                        <div class="sk-rect5"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <p id="totalImagens"></p>
+                            <p id="msg-sem-img">Utilize as opções ao lado para carregar as imagens</p>
+                            <div class="hr-line-dashed"></div>
+                            <div id="container-booking-imagens"></div>
+                        </div>
+                    </div>
+                    <div class="booking-pagination">
+                    </div>
+                    
+                    <?php echo $this->render("booking/step-buttons.phtml"); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->headLink()->appendStylesheet($this->baseUrl() . '/resources/jsTree/style.min.css'); ?>
+<?php $this->inlineScript()->appendFile($this->baseUrl() . '/resources/jsTree/jstree.min.js'); ?>
+<?php $this->inlineScript()->appendFile($this->baseUrl() . '/js/pagination.js'); ?>
+<script>
+    var pagination;
+    
+    //Preenche a combo Ambiente
+    var treeViewExists = false;
+    function carregarFiltros() {
+        var campanhaId = $("select[name='id_campanha']").val();
+        var canaisIds = $("select[name='canais[]']").val();
+        var $comboAmbientes = $("select[name='ambientes[]']");
+        var attrs = {
+            extra: {canais:canaisIds}
+        }
+        Form.filterCombo($comboAmbientes, $comboCampanha, "/campanha/ambientes-por-campanha", attrs, true);
+        $comboAmbientes.chosen();
+
+        //Carrega a Treeview
+        $('input.date').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            language: "pt-BR",
+            format: 'dd/mm/yyyy'
+        });
+        
+        //Monta a Treeview
+        var url = "/booking/carregar-filtros?campanhaId="+campanhaId+"&canaisIds="+canaisIds;
+        if( !treeViewExists ) {
+            treeViewExists = true;
+            $('#jstree1').jstree({
+                'plugins' : [ 'types' ],
+                'types' : {
+                    'default' : {
+                        'icon' : 'fa fa-folder'
+                    },
+                    'ambiente' : {
+                        'icon' : 'none'
+                    }
+                },
+                'core' : {
+                    'data' : {
+                      "url" : url,
+                      "dataType" : "json" // needed only if you do not supply JSON headers
+                    }
+                }
+            });
+        } else {
+            $('#jstree1').jstree(true).settings.core.data.url = url;
+            $('#jstree1').jstree("refresh");
+        }
+    }
+    
+    //Carrega as fotos
+    $("#btnCarregarFotos").on("click", function(e) {
+        e.preventDefault();
+        var ambientesId = $("#form-booking-fotos select[name='ambientes[]']").val();
+        var $dataInicio = $("#form-booking-fotos input[name=dt_inicio]");
+        var $dataFim = $("#form-booking-fotos input[name=dt_fim]");
+        var formValid = true;
+        $.each([$dataInicio, $dataFim], function(idx, $campo) {
+            if( $campo.val() == '' ) {
+                $campo.addClass("error");
+                formValid = false;
+            } else {
+                $campo.removeClass("error");
+            }
+        })
+        if( !formValid ) {
+            return false;
+        }
+        
+        //Carrega as fotos
+        carregarFotos($dataInicio.val(), $dataFim.val(), 1);
+    });
+    
+    //Evento de clique na página
+    $(".booking-pagination").on("click", "li.paginate_button a", function(e) {
+        e.preventDefault();
+        
+        //Seleciona a página
+        var page = null;
+        var liParent = $(this).closest("li");
+        if( liParent.hasClass('previous') ) {
+            page = parseInt(liParent.parent().find('li.active a').html()) - 1;
+            if( page <= 0 ) {
+                return;
+            }
+        } else if( liParent.hasClass('next') ) {
+            page = parseInt(liParent.parent().find('li.active a').html()) + 1;
+            if( page > pagination.totalPages ) {
+                return;
+            }
+        } else {
+            page = $(this).html();
+        }
+        
+        //Recarrega as fotos
+        var $dataInicio = $("#form-booking-fotos input[name=dt_inicio]");
+        var $dataFim = $("#form-booking-fotos input[name=dt_fim]");
+        carregarFotos($dataInicio.val(), $dataFim.val(), page);
+    })
+    
+    //Carrega as fotos
+    function carregarFotos(dataInicio, dataFim, pagina) {
+        $('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
+        
+        //Realiza a requisição
+        var filtros = {
+            data_inicio: dataInicio,
+            data_fim: dataFim,
+            pagina: pagina
+        }
+        $.get("/booking/carregar-imagens?"+jQuery.param(filtros), function(rs) {
+            var dados = getResponse(rs);
+            var imagens = dados.indices;
+            if( imagens ) {
+                if( imagens && imagens.length ) {
+                    $("#msg-sem-img").hide();
+                } else {
+                    $("#msg-sem-img").html("Não foram encontradas imagens");
+                    $("#msg-sem-img").show();
+                }
+                var html = "";
+                for( i in imagens ) {
+                    html += "\n\
+                        <div class='file-box'>\n\
+                            <div class='file'>\n\
+                                <a href='#'>\n\
+                                    <span class='corner'></span>\n\
+                                    <div class='image'>\n\
+                                        <img alt='image' class='img-responsive' src='"+imagens[i].url+"'>\n\
+                                    </div>\n\
+                                    <div class='file-name'>\n\
+                                        Document_2014.doc\n\
+                                        <br/>\n\
+                                        <small>Added: Jan 11, 2014</small>\n\
+                                    </div>\n\
+                                </a>\n\
+                            </div>\n\
+                        </div>";
+                }
+                $('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
+                $("#container-booking-imagens").html(html);
+                
+                //Gera a paginação
+                pagination = new Pagination(dados.total, dados.limite, pagina);
+                var pagHtml = pagination.render();
+                $(".booking-pagination").html(pagHtml);
+                $("p#totalImagens").html("Foram encontradas "+dados.total+" imagens");
+            }
+        }, 'json');
+    }
+        
+</script>

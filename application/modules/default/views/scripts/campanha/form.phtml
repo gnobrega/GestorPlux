@@ -18,46 +18,76 @@
 </div>
 
 <script>
-    var pontosId = null;
+    var ambientesId = null;
+    var agenciaId = null
     <?php
-        if( isset($this->registro['pontos']) ) {
-            echo "pontosId = '" .implode(",", $this->registro['pontos']) . "'\n";
-            echo "pontosId = pontosId.split(',');\n";
+        if( isset($this->registro['ambientes']) ) {
+            echo "ambientesId = '" .implode(",", $this->registro['ambientes']) . "'\n";
+            echo "ambientesId = ambientesId.split(',');\n";
+        }
+        if( isset($this->registro['id_empresa_agencia']) ) {
+            echo "agenciaId = {$this->registro['id_empresa_agencia']}\n";
         }
     ?>
-
-    //Configurações default
-    Form.init("form-registro");
-    
-    //Preenche a combo de pontos
+        
     $(function() {
+        
+        //Preenche a combo de ambientes
         $("select[name='canais[]']").on("change", function() {
             var canaisId = $("select[name='canais[]']").val();
-            $("select[name='pontos[]']").html("");
+            $("select[name='ambientes[]']").html("");
             if( canaisId.length ) {
                 var canaisIdStr = canaisId.join(",");
                 var options = "";
-                $.get("/ponto/list-json", {filter:"id_canal IN ("+canaisIdStr+")"}, function(pontos) {
-                    for( i in pontos ) {
-                        options += "<option value='"+pontos[i].id+"'>"+pontos[i].nome+"</option>";
+                $.get("/ambiente/list-json", {filter:"id_canal IN ("+canaisIdStr+")"}, function(ambientes) {
+                    for( i in ambientes ) {
+                        options += "<option value='"+ambientes[i].id+"'>"+ambientes[i].nome+"</option>";
                     }
-                    $("select[name='pontos[]']").html(options);
-                    $("select[name='pontos[]']").chosen("destroy");
-                    $("select[name='pontos[]']").chosen();
-                    
-                    //Seta os pontos já salvos
-                    for( i in pontosId ) {
-                        var pontoId = pontosId[i];
-                        $("select[name='pontos[]'] option[value="+pontoId+"]").prop("selected", true);
-                        $("select[name='pontos[]']").chosen("destroy");
-                        $("select[name='pontos[]']").chosen();
+                    $("select[name='ambientes[]']").html(options);
+                    $("select[name='ambientes[]']").trigger("chosen:updated");
+
+                    //Seta os ambientes já salvos
+                    for( i in ambientesId ) {
+                        var ambienteId = ambientesId[i];
+                        $("select[name='ambientes[]'] option[value="+ambienteId+"]").prop("selected", true);
+                        $("select[name='ambientes[]']").trigger("chosen:updated");
                     }
                 }, 'json');
             } else {
-                $("select[name='pontos[]']").chosen("destroy");
-                $("select[name='pontos[]']").chosen();
+                $("select[name='ambientes[]']").chosen("destroy");
+                $("select[name='ambientes[]']").chosen();
             }
         });
         $("select[name='canais[]']").trigger("change");
+    
+    
+        //Preenche a combo de agências
+        $("select[name='_id_empresa_cliente']").on("change", function() {
+            var $comboAgencia =  $("select[name='_id_empresa_agencia']");
+            var empresaId = $(this).val();
+            $comboAgencia.html("");
+            $comboAgencia.trigger("chosen:updated");
+            if( empresaId == SELECT_VALUE_NULL ) {
+                return false;
+            }
+            var options = "<option value='"+SELECT_VALUE_NULL+"'>[Selecione]</option>";
+            $.post("/empresa/agencias-por-cliente", {id_empresa_cliente: empresaId}, function(rs) {
+                var agencias = getResponse(rs);
+                for( i in agencias ) {
+                    options += "<option value='"+agencias[i].id+"'>"+agencias[i].nome_comercial+"</option>";
+                }
+                $comboAgencia.html(options);
+                $comboAgencia.trigger("chosen:updated");
+                    
+                //A agência já cadastrada
+                if( agenciaId ) {
+                    $comboAgencia.find("option[value="+agenciaId+"]").prop("selected", true);;
+                    $comboAgencia.trigger("chosen:updated");
+                }
+            }, 'json');
+            
+        });
+        $("select[name='_id_empresa_cliente']").trigger("change");
+
     });
 </script>

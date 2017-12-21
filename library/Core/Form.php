@@ -6,16 +6,19 @@
  * @author gustavonobrega
  */
 class Core_Form {
+    private $_id;
     private $_action;
     private $_method = "post";
     private $_fields = array();
     private $_data = array();
+    public $_showButtons = true;
     
     /**
      * Construtor
      */
     public function __construct($action) {
         $this->_action = $action;
+        $this->_id = "form-".rand(0, 1000);
     }
     
     /**
@@ -54,7 +57,7 @@ class Core_Form {
     public function render() {
         
         //Topo do formulário
-        $html = "<form id=\"form-registro\" action=\"{$this->_action}\" method=\"post\" class=\"form-horizontal\" >";
+        $html = "<form id=\"{$this->_id}\" action=\"{$this->_action}\" method=\"post\" class=\"form-horizontal\" >";
         
         //Recupera o código html dos campos
         foreach( $this->_fields as $field ) {
@@ -67,11 +70,17 @@ class Core_Form {
         }
         
         //Gera o html dos botões
-        $htmlButtons = $this->getHtmlButtons();
-        $html .= $htmlButtons;
+        if( $this->_showButtons ) {
+            $htmlButtons = $this->getHtmlButtons();
+            $html .= $htmlButtons;
+        }
         
         //Encerra o formulário
         $html .= "</form>";
+        
+        //Js
+        $html .= "<script>Form.init('{$this->_id}');</script>"; 
+                
         echo $html;
     }
     
@@ -101,6 +110,14 @@ class Core_Form {
      */
     public function getData() {
         return $this->_data;
+    }
+    
+    /**
+     * Oculta os botões
+     */
+    public function hideButtons() {
+        $this->_showButtons = false;
+        return $this;
     }
 }
 
@@ -213,6 +230,10 @@ class Core_Form_Field {
         $html .= "<label for='{$this->_id}' class='col-sm-2 control-label'>{$label}</label>";
         $html .= "<div class='col-sm-10'>";
         $html .= $htmlField;
+        
+        //Mensagem de erro
+        $html .= "<label id='combo-{$this->_name}-error' class='error' for='combo-{$this->_name}' ></label>";
+        
         $html .= "</div>";
         $html .= "</div>";
         
@@ -269,6 +290,7 @@ class Core_Form_Field_Select extends Core_Form_Field {
      * Gera o html do campo
      */
     public function getHtml() {
+        
         if( !$this->_table ) {
             $this->_table = $this->_name;
         }
@@ -341,6 +363,18 @@ class Core_Form_Field_Select extends Core_Form_Field {
             $this->_attrs['where'] = "";
         }
         $this->_attrs['where'] .= "id NOT IN (" . implode(",", $ids) . ")";
+    }
+    
+    /**
+     * Torna o campo obrigatório
+     */
+    public function setRequired($flag) {
+        parent::setRequired($flag);
+        /*if( $flag ) {
+            $this->_attrs['rules']['data-rule-select-not-null'] = "true";
+        }*/
+        
+        return $this;
     }
 }
 

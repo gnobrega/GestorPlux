@@ -63,7 +63,7 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
         foreach( $attrs as $attr=>$val ) {
             $this->view->comboConfig[$attr] = $val;
         }
-
+        
         //Html
         return $this->view->render('component-combo.phtml');
     }

@@ -38,9 +38,10 @@ class Zend_View_Helper_Menu extends Zend_View_Helper_Abstract {
         $menu->addItem('Resumo', '/default/index/index', 'fa fa-table');
         $menu->addItem('Publicidade', null, 'fa fa-bullhorn')
             ->addSubitem('Campanhas', '/default/campanha/index')
-            ->addSubitem('Pontos de Veiculação', '/default/ponto/index')
+            ->addSubitem('Ambientes', '/default/ambiente/index')
             ->addSubitem('Canais', '/default/canal/index')
-            ->addSubitem('Segmentos', '/default/empresa-segmento/index');
+            ->addSubitem('Segmentos', '/default/empresa-segmento/index')
+            ->addSubitem('Booking', '/default/booking/index');
         $menu->addItem('Empresas', '/default/empresa/index', 'fa fa-building-o');
         $menu->addItem('Segurança', null, 'fa fa-lock')
                 ->addSubitem('Usuários', '/default/usuario/index')

@@ -207,10 +207,13 @@ class AbstractController extends Zend_Controller_Action {
     /**
      * Retorna sucesso
      */
-    public function returnSuccess($msg = "") {
+    public function returnSuccess($msg = "", $data = null) {
         $opt = array('status'=>'success');
         if( $msg ) {
             $opt['msg'] = $msg;
+        }
+        if( $data !== null ) {
+            $opt['data'] = $data;
         }
         echo json_encode($opt);
     }

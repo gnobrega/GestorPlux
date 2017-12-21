@@ -1,0 +1,99 @@
+<!-- STEP PHOTOS -->
+<div class="tab-booking animated fadeInRight" id="tab-step-form">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Formulário <small>Preencha todos os campos obrigatórios</small></h5>
+                </div>
+                <div class="ibox-content form-horizontal">
+                    <form id="form-booking" action="" method="post" class="form-horizontal">
+                        
+                        <!-- Campanha -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">* Campanha</label>
+                            <div class="col-sm-10">
+                                <?php echo $this->Component()->combo("campanha", array("required"=>true, "name"=>"id_campanha")); ?>
+                                <label id="combo-id_campanha-error" class="error" for="combo-id_campanha"></label>
+                            </div>
+                        </div>
+                        
+                        <!-- Tipo de Booking -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">* Tipo de Booking</label>
+                            <div class="col-sm-10">
+                                <select class="form-control chosen-select" name="tipo" required="true">
+                                    <option value="BOOKING_COMPLETO">Completo</option>
+                                    <option value="BOOKING_AMOSTRAGEM">Amostragem</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Canais -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">* Canais</label>
+                            <div class="col-sm-10">
+                                <?php echo $this->Component()->combo(null, array("multiple"=>true, 
+                                    "name"=>"canais[]", "required"=>true)); ?>
+                                <label id="combo-canais[]-error" class="error" for="combo-canais[]"></label>
+                            </div>
+                        </div>
+                        
+                        <!-- Data de emissão 
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">* Data de emissão</label>
+                            <div class="col-sm-10">
+                                <div class="input-group date">
+                                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                    <input type="text" name="data_emissao" class="form-control datepicker" required>
+                                </div>
+                                <label id="data_emissao-error" class="error" for="data_emissao"></label>
+                            </div>
+                        </div>-->
+                        
+                        <!-- Campanha -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">Número da Nota</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="n_nota" />
+                            </div>
+                        </div>
+
+                    </form>
+                    <?php echo $this->render("booking/step-buttons.phtml"); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    //Configurações default
+    Form.init("form-booking");    
+        
+    var agenciaId = null
+    
+    //Carrega os canais de acordo com a campanha selecionada
+    var $comboCampanha = $("select[name='id_campanha']");
+    var $comboCanal =  $("select[name='canais[]']");
+    Form.filterCombo($comboCanal, $comboCampanha, "/campanha/canais-por-campanha");
+        
+    //Submete o formulário
+    $("button.btn-next").on("click", function() {
+        $("form#form-booking").submit();    
+//toStep(1);
+    });
+    $("form#form-booking").on("submit", function(e) {
+        if( $("#form-booking").valid() ) {
+            $btnStep = $("div.booking-steps button.btn-success");
+            var step = $btnStep.parent().index() + 1;
+            $.getJSON("/booking/manter-em-sessao?"+$(this).serialize(), function(rs) {
+                var resp = getResponse(rs);
+                toStep(step);
+            });
+            
+            return false;
+        }
+    });
+
+</script>

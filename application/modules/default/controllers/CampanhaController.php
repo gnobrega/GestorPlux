@@ -78,7 +78,7 @@ class CampanhaController extends AbstractController {
         
         //Agência
         $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
-                ->setTable("empresa")
+                ->setEmpty(true)
                 ->setName("_id_empresa_agencia")
                 ->setLabel("Agência");
         
@@ -98,10 +98,10 @@ class CampanhaController extends AbstractController {
         }
         
         
-        //Pontos
+        //Ambientes
         $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
-                ->setName("pontos[]")
-                ->setLabel("Pontos")
+                ->setName("ambientes[]")
+                ->setLabel("Ambientes")
                 ->setAttr("firstNull", false)
                 ->setMultiple(true)
                 ->setEmpty(true);
@@ -126,11 +126,11 @@ class CampanhaController extends AbstractController {
             $registro['canais'][] = $campCanal['id_canal'];
         }
         
-        //Carrega os relacionamentos com os pontos
-        $modRel = new Model_Generic("campanha_ponto");
-        $campPontos = $modRel->fetchAll("id_campanha = " . $this->getParam('id'))->toArray();
-        foreach( $campPontos as $campPonto ) {
-            $registro['pontos'][] = $campPonto['id_ponto'];
+        //Carrega os relacionamentos com os ambientes
+        $modRel = new Model_Generic("campanha_ambiente");
+        $campAmbientes = $modRel->fetchAll("id_campanha = " . $this->getParam('id'))->toArray();
+        foreach( $campAmbientes as $campAmbiente ) {
+            $registro['ambientes'][] = $campAmbiente['id_ambiente'];
         }
         
         //Monta o formulário
@@ -157,20 +157,85 @@ class CampanhaController extends AbstractController {
             }
         }
         
-        //Cria o relacionamento com os pontos
-        $modRel = new Model_Generic("campanha_ponto");
+        //Cria o relacionamento com os ambientes
+        $modRel = new Model_Generic("campanha_ambiente");
         $modRel->delete("id_campanha = " . $rs['id']);
-        if( isset($_POST['pontos']) ) {
-            foreach( $_POST['pontos'] as $pontoId ) {
-                $campPonto = array(
-                    "id_ponto" => $pontoId,
+        if( isset($_POST['ambientes']) ) {
+            foreach( $_POST['ambientes'] as $ambienteId ) {
+                $campAmbiente = array(
+                    "id_ambiente" => $ambienteId,
                     "id_campanha" => $rs['id']
                 );
-                $modRel->insert($campPonto);
+                $modRel->insert($campAmbiente);
             }
         }
 
         //Redireciona a página
         $this->redirect("/".$this->_entity);
+    }
+    
+    /**
+     * Carrega os canais da campanha
+     */
+    public function canaisPorCampanhaAction() {
+        if( !isset($_POST['filter']['entityParent']['id']) ) {
+            $this->returnError("Informe o id da campanha");
+            die;
+        }
+        $agenciaId = $_POST['filter']['entityParent']['id'];
+        
+        //Carrega os relacionamento com os canais
+        $mdlRel = new Model_Generic("campanha_canal");
+        $rels = $mdlRel->fetchAll("id_campanha = " . $agenciaId)->toArray();
+        $canais = array();
+        
+        $modelCanal = new Model_Canal();
+        foreach( $rels as $rel ) {
+            $rs = $modelCanal->find($rel['id_canal'])->toArray();
+            if( count($rs) ) {
+                $canais[] = array(
+                    "id" => $rs[0]['id'],
+                    "label" => $rs[0]['nome']
+                );
+            }
+        }
+        Core_Global::encodeListUtf($canais, true);
+        $this->returnSuccess(null, $canais);
+        die;
+    }
+    
+    /**
+     * Carrega os ambientes da campanha
+     */
+    public function ambientesPorCampanhaAction() {
+        if( !isset($_POST['filter']['entityParent']['id']) ) {
+            $this->returnError("Informe o id da campanha");
+            die;
+        }
+        if( !isset($_POST['extra']['canais']) ) {
+            $this->returnError("Informe os canais");
+            die;
+        }
+        $agenciaId = $_POST['filter']['entityParent']['id'];
+        $canais = implode(",", $_POST['extra']['canais']);
+                
+        //Carrega os relacionamento com os ambientes
+        $mdlRel = new Model_Generic("campanha_ambiente");
+        $rels = $mdlRel->fetchAll("id_campanha = " . $agenciaId)->toArray();
+        $ambientes = array();
+        
+        $modelAmbiente = new Model_Ambiente();
+        foreach( $rels as $rel ) {
+            $rs = $modelAmbiente->fetchAll("id = " . $rel['id_ambiente'] . " AND id_canal IN ({$canais})")->toArray();
+            if( count($rs) ) {
+                $ambientes[] = array(
+                    "id" => $rs[0]['id'],
+                    "label" => $rs[0]['nome']
+                );
+            }
+        }
+        Core_Global::encodeListUtf($ambientes, true);
+        $this->returnSuccess(null, $ambientes);
+        die;
     }
 }
