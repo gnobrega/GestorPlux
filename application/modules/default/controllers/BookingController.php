@@ -92,11 +92,56 @@ class BookingController extends AbstractController {
         $dataInicio = Core_Global::dataIso($_GET['data_inicio']);
         $dataFim = Core_Global::dataIso($_GET['data_fim']);
         $pagina = $_GET['pagina'];
+        $ambienteId = ( isset($_GET['ambiente_id']) ) ? $_GET['ambiente_id'] : null;
+        
+        //Carrega a lista de ambientes
+        $mdlAmbiente = new Model_Ambiente();
+        $ambientes = $mdlAmbiente->fetchAll()->toArray();
+        Core_Global::attrToKey($ambientes, "id");
+        Core_Global::encodeListUtf($ambientes, true);
+        
+        //Carrega a lista de canais
+        $mdlCanal = new Model_Canal();
+        $canais = $mdlCanal->fetchAll(null, 'nome')->toArray();
+        Core_Global::attrToKey($canais, "id");
+        Core_Global::encodeListUtf($canais, true);
+
+        //Calcula o número de fotos por ambiente
+        $mdlIndices = new Model_S3BookingIndices();
+        $rsSoma = $mdlIndices->calcularFotoAmbientes($dataInicio, $dataFim);
+        Core_Global::attrToKey($rsSoma, "id_ambiente");
+        foreach( $rsSoma as $totalAmbiente ) {
+            $ambId = $totalAmbiente['id_ambiente'];
+            if( isset($ambientes[$ambId]) ) {
+                
+                //Adiciona a camapanha à lista de canal
+                $canalId = $ambientes[$ambId]['id_canal'];
+                if( isset($canais[$canalId]) ) {
+                    if( !isset($canais[$canalId]['ambientes'][$ambId]['indices']) ) {
+                        $canais[$canalId]['ambientes'][$ambId] = $ambientes[$ambId];
+                        $canais[$canalId]['ambientes'][$ambId]['indices'] = $rsSoma[$ambId]['total'];
+                    }
+                }
+               
+            }
+        }
         
         //Carrega as imagens a partir dos índices
-        $mdlIndices = new Model_S3BookingIndices();
-        $rs = $mdlIndices->pesquisar($dataInicio, $dataFim, 56, $pagina);
+        $rs = $mdlIndices->pesquisar($dataInicio, $dataFim, 56, $pagina, $ambienteId);
+        foreach( $rs['indices'] as $i => $indice ) {
+            $ambienteId = $indice['id_ambiente'];
+            $ambiente = "Ambiente não encontrado";
+            $rs['indices'][$i]['ambiente'] = $ambiente;
+            $rs['indices'][$i]['data_foto'] = Core_Global::dataBr($rs['indices'][$i]['data_foto']);
+        }
 
+        //Ordena os canais
+        $rs['canais'] = array();
+        foreach( $canais as $canal ) {
+            $rs['canais'][] = $canal;
+        }
+        
+        //Retorno
         $this->returnSuccess(null, $rs);
     }
     

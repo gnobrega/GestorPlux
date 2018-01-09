@@ -30,7 +30,8 @@ function Pagination(totalItens, limit, current) {
         var html = '\n\
             <div class="row" id="'+this.id+'">\n\
                 <div class="col-xs-6">\n\
-                    <div class="dataTables_info" id="tb-633_info" role="status" aria-live="polite">Exibindo página '+this.current+' de '+this.totalPages+'</div>\n\
+                    <div class="dataTables_info" id="tb-633_info" role="status" aria-live="polite">\n\
+                        Exibindo página '+this.current+' de '+this.totalPages+' ('+this.totalItens+' registros)</div>\n\
                 </div>\n\
                 <div class="col-sm-12 col-md-6">\n\
                     <div class="dataTables_paginate paging_simple_numbers" id="tb-633_paginate">\n\
