@@ -81,6 +81,12 @@ class AmbienteController extends AbstractController {
                 ->setTable("canal")
                 ->setName("_id_canal")
                 ->setLabel("Canal");
+        
+        //Telas
+        $fieldTelas = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_telas")
+                ->setLabel("Telas");
+
     }
     
     /**

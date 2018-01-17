@@ -85,13 +85,14 @@ class BookingController extends AbstractController {
     public function carregarImagensAction() {
         
         //Valida os parâmetros
-        if( !isset($_GET['data_inicio']) || !isset($_GET['data_fim']) ) {
+        if( !isset($_GET['data_inicio']) || !isset($_GET['data_fim']) || !isset($_GET['canais']) ) {
             $this->returnError("Faltam parâmetros para carregar as imagens");
             die;
         }
         $dataInicio = Core_Global::dataIso($_GET['data_inicio']);
         $dataFim = Core_Global::dataIso($_GET['data_fim']);
         $pagina = $_GET['pagina'];
+        $canaisIds = $_GET['canais'];
         $ambienteId = ( isset($_GET['ambiente_id']) ) ? $_GET['ambiente_id'] : null;
         
         //Carrega a lista de ambientes
@@ -108,13 +109,13 @@ class BookingController extends AbstractController {
 
         //Calcula o número de fotos por ambiente
         $mdlIndices = new Model_S3BookingIndices();
-        $rsSoma = $mdlIndices->calcularFotoAmbientes($dataInicio, $dataFim);
+        $rsSoma = $mdlIndices->calcularFotoAmbientes($canaisIds, $dataInicio, $dataFim);
         Core_Global::attrToKey($rsSoma, "id_ambiente");
         foreach( $rsSoma as $totalAmbiente ) {
             $ambId = $totalAmbiente['id_ambiente'];
             if( isset($ambientes[$ambId]) ) {
                 
-                //Adiciona a camapanha à lista de canal
+                //Adiciona a campanha à lista de canal
                 $canalId = $ambientes[$ambId]['id_canal'];
                 if( isset($canais[$canalId]) ) {
                     if( !isset($canais[$canalId]['ambientes'][$ambId]['indices']) ) {
@@ -122,12 +123,11 @@ class BookingController extends AbstractController {
                         $canais[$canalId]['ambientes'][$ambId]['indices'] = $rsSoma[$ambId]['total'];
                     }
                 }
-               
             }
         }
         
         //Carrega as imagens a partir dos índices
-        $rs = $mdlIndices->pesquisar($dataInicio, $dataFim, 56, $pagina, $ambienteId);
+        $rs = $mdlIndices->pesquisar($canaisIds, $dataInicio, $dataFim, 56, $pagina, $ambienteId);
         foreach( $rs['indices'] as $i => $indice ) {
             $ambienteId = $indice['id_ambiente'];
             $ambiente = "Ambiente não encontrado";
@@ -138,7 +138,9 @@ class BookingController extends AbstractController {
         //Ordena os canais
         $rs['canais'] = array();
         foreach( $canais as $canal ) {
-            $rs['canais'][] = $canal;
+            if( in_array($canal['id'], $canaisIds) !== false ) {
+                $rs['canais'][] = $canal;
+            }
         }
         
         //Retorno
@@ -369,5 +371,94 @@ class BookingController extends AbstractController {
         
         $this->returnSuccess("Fim da conversão. {$total} arquivos movidos");
         die;
+    }
+    
+    /**
+     * Exporta o booking
+     */
+    public function exportarAction() {
+        $this->_helper->layout->disableLayout();
+        $campanhaId                 = $_GET['campanhaId'];
+        $canaisIds                  = $_GET['canaisIds'];
+        $this->view->constTipo      = $_GET['constTipo'];
+        $this->view->constLayout    = $_GET['constLayout'];
+        $this->view->fotos          = $_GET['fotos'];
+        $this->view->assinatura     = $_GET['assinatura'];
+        $this->view->ambientes      = array();
+
+        //Carrega os detalhes das fotos
+        $mdlIndices = new Model_S3BookingIndices();
+        $this->view->indices = array();
+        $this->view->indices = $mdlIndices->fetchAll("`key` IN ('" . implode("','", $this->view->fotos) . "')", array("id_ambiente","data_foto"))->toArray();
+        
+        //Carrega os ambientes
+        $mdlAmbiente = new Model_Ambiente();
+        $ambientesIds = array();
+        foreach( $this->view->indices as $indice ) {
+            $ambientesIds[$indice['id_ambiente']] = $indice['id_ambiente'];
+        }
+        $ambientes = $mdlAmbiente->fetchAll("id IN (" . implode(",", $ambientesIds) . ")")->toArray();
+        $this->view->ambientes = array();
+        foreach( $ambientes as $ambiente ) {
+            $this->view->ambientes[$ambiente['id_canal']][] = $ambiente;
+        }
+                
+        //Recupera o nome dos ambientes
+        Core_Global::attrToKey($ambientes, "id");
+        foreach( $this->view->indices as $i => $indice ) {
+            if( isset($ambientes[$indice['id_ambiente']]) ) {
+                $this->view->indices[$i]['nome_ambiente'] = $ambientes[$indice['id_ambiente']]['nome'];
+            } else {
+                $this->view->indices[$i]['nome_ambiente'] = "Não identificado";
+            }
+        }
+        
+        //Carrega os detalhes da campanha
+        $mdlCampanha = new Model_Campanha();
+        $this->view->campanha = $mdlCampanha->find($campanhaId)->current()->toArray();
+        
+        //Carrega os detalhes do cliente
+        $mdlEmpresa = new Model_Empresa();
+        $this->view->cliente = $mdlEmpresa->find($this->view->campanha['id_empresa_cliente'])->current()->toArray();
+        
+        //Agência
+        $this->view->agencia = $mdlEmpresa->find($this->view->campanha['id_empresa_agencia'])->current()->toArray();
+        
+        //Carrega os canais
+        $mdlCanal = new Model_Canal();
+        $this->view->canais = $mdlCanal->fetchAll("id IN (" . implode(',', $canaisIds) . ")")->toArray();
+        
+        //Baixa as imagens temporárias
+        $this->baixarFotos($this->view->indices);
+        
+        //Importa a view
+        $this->renderScript("booking/layouts/default.phtml");
+    }
+    
+    /**
+     * Baixa as fotos temporariamente
+     */
+    public function baixarFotos(&$indices) {
+        
+        //Limpa os arquivos antigos
+        $path = './tmp/booking_fotos/';
+        $arquivos = scandir($path);
+        foreach( $arquivos as $arquivo ) {
+            if( $arquivo != '.' && $arquivo != '..' ) {
+//                unlink($path . $arquivo);
+            }
+        }
+        
+        //Baixa a novas imagens
+        foreach( $indices as $i => $indice ) {
+            $idx = strrpos($indice['url'], "/") + 1;
+            $nomeArquivo = substr($indice['url'], $idx);
+//            $conteudo  = file_get_contents($indice['url']);
+//            $handle = fopen($path . $nomeArquivo, 'w');
+//            fwrite($handle, $conteudo);
+//            fclose($handle);
+            
+            $indices[$i]['fotoLocal'] = $path . $nomeArquivo;
+        }
     }
 }

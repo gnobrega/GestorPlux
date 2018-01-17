@@ -1,0 +1,812 @@
+<?php
+
+    //Importa as bibliotecas
+    $pathClass = realpath(APPLICATION_PATH . "/../library/PHPPowerPoint/Classes");
+    set_include_path(get_include_path() . PATH_SEPARATOR . $pathClass);
+    require 'PHPPowerPoint.php';
+    require 'PHPPowerPoint/IOFactory.php';
+    $pag = 1;
+    
+    //Inicia o objeto
+    $objPHPPowerPoint = new PHPPowerPoint();
+    $objPHPPowerPoint->getLayout()->setDocumentLayout(PHPPowerPoint_DocumentLayout::LAYOUT_A4, false);
+    $currentSlide = $objPHPPowerPoint->getActiveSlide();
+    
+    //Compartilha os parâmtros com as funções
+    $params = array(
+        "objPHPPowerPoint" => $objPHPPowerPoint,
+        "currentSlide" => $currentSlide,
+        "constTipo" => $this->constTipo,
+        "campanha" => $this->campanha,
+        "cliente" => $this->cliente,
+        "agencia" => $this->agencia,
+        "indices" => $this->indices,
+        "ambientes" => $this->ambientes,
+        "canais" => $this->canais,
+        "pag" => &$pag,
+        "assinatura" => $this->assinatura,
+        "ambientesMap" => array()
+    );
+    
+    //Monta a capa
+    montarCapa($params);
+    
+    //Relação de comprovantes
+    $params['currentSlide'] = $objPHPPowerPoint->createSlide();
+    montarRelacaoComprovantes($params);
+
+    //Cartela de referência
+    $params['currentSlide'] = $objPHPPowerPoint->createSlide();
+    montarCartelas($params);
+    
+    //Fotografias
+    exibirFotos($params);
+        
+    //Exporta o arquivo
+    $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
+    $arquivo = './tmp/BOOKING.pptx';
+    $objWriter->save($arquivo);
+    $contentFile = file_get_contents($arquivo);
+    echo 'ok2';
+    
+    
+    /*************************************/
+    /************** Funções **************/
+    /*************************************/
+    
+    /**
+     * Monta a capa
+     */
+    function montarCapa(&$params) {
+        $currentSlide = $params['currentSlide'];
+        $constTipo = $params['constTipo'];
+        $campanha = $params['campanha'];
+        $cliente = $params['cliente'];
+        $agencia = $params['agencia']; 
+        $pag = &$params['pag'];
+        $assinatura = $params['assinatura'];
+        
+        //LOGO
+        $shape = $currentSlide->createDrawingShape();
+        $img = "lookindoorlogotipo.jpg";
+        $shape->setPath('./img/' . $img);
+        $shape->setHeight(81);
+        $shape->setOffsetX(80);
+        $shape->setOffsetY(150);
+        
+        //BOOKING _ COMPROVANTES DE VEICULAÇÃO
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(300);
+        $shape->setWidth(600);
+        $shape->setOffsetX(100);
+        $shape->setOffsetY(380);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+        $lin = $shape->createTextRun("BOOKING _ COMPROVANTES DE VEICULAÇÃO");
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(18);
+        $lin->getFont()->setName("Roboto Condensed");
+        $shape->createBreak();
+        
+        //FOTOS POR AMOSTRAGEM
+        if( $constTipo != 'BOOKING_COMPLETO' ) {
+            $lin = $shape->createTextRun("FOTOS POR AMOSTRAGEM");
+            $lin->getFont()->setBold(true);
+            $lin->getFont()->setSize(18);
+            $lin->getFont()->setName("Roboto Condensed");
+            $shape->createBreak();
+            $tableY = 500;
+        } else {
+            $tableY = 450;
+        }
+        
+        //TABELA DE DADOS
+        $table = $currentSlide->createTableShape(2);
+        $table->setWidth(700);
+        $table->setOffsetX(120);
+        $table->setOffsetY($tableY);
+        $data = array(
+            "CLIENTE" => strtoupper(utf8_encode($cliente['nome_comercial'])),
+            "CAMPANHA" => strtoupper(utf8_encode($campanha['nome'])),
+            "PRODUTO" => utf8_encode($campanha['produto']),
+            "PERIODO" => Core_Global::dataBr($campanha['inicio']) . " A " . Core_Global::dataBr($campanha['fim']),
+            "PI" => $campanha['pi'],
+            "AGENCIA" => utf8_encode($agencia['nome_comercial'])
+        );
+        montarTabelaCapa($table, $data);
+        
+        //RODAPÉ DA CAPA
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(40);
+        $shape->setWidth(700);
+        $shape->setOffsetX(50);
+        $shape->setOffsetY(1030);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+        $lin = $shape->createTextRun("LOOK IN DOOR - PLACAS DE SINALIZAÇÃO " . 
+                "S/A _ CGC: 06.294.612/0001-10   / /   SIG QD. 02 Nº 340 _ CEP: 70.610-901 _ BRASÍLIA - DF   / /   (61) 3214-1400");
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(8);
+        $lin->getFont()->setName("Roboto Condensed");
+        $shape->createBreak();
+        $lin = $shape->createTextRun("OPEC: ");
+        $lin->getFont()->setBold(true);
+        $lin = $shape->createTextRun($assinatura);
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(8);
+        $lin->getFont()->setName("Roboto Condensed");
+        
+        //Página
+        exibirNumeroPagina($currentSlide, $pag);
+    }
+    
+    /**
+     * Monta as páginas de relação de comprovantes
+     */
+    function montarRelacaoComprovantes(&$params) {
+        $objPHPPowerPoint = $params['objPHPPowerPoint'];
+        $currentSlide = $params['currentSlide'];
+        $campanha = $params['campanha'];
+        $cliente = $params['cliente'];
+        $canais = $params['canais'];
+        $ambientes = $params['ambientes'];
+        $pag = &$params['pag'];
+        $assinatura = $params['assinatura'];
+        $indices = $params['indices'];
+        
+        //Cabeçalho
+        exibirCabecalho($currentSlide, $campanha, $cliente);
+        
+        //RELAÇÃO DE COMPROVANTES
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(300);
+        $shape->setWidth(600);
+        $shape->setOffsetX(100);
+        $shape->setOffsetY(130);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+        $lin = $shape->createTextRun("RELAÇÃO DE COMPROVANTES");
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(18);
+        $lin->getFont()->setName("Roboto Condensed");
+        $shape->createBreak();
+        
+        
+        
+        
+        //Monta os slides com as tabelas
+        $yStart = 200;
+        $yInterv = 25;
+        $yLimit = 900;
+//        $slides = array();
+//        foreach( $canais as $ic => $canal ) {
+//            $canalId = $canal['id'];
+//            
+//            //Verifica se possui ambientes naquele canal
+//            if( isset($ambientes[$canalId]) ) {
+//                $slide = array();
+//                
+//                //Se chegar ao final do slide cria um novo
+//                if( $yStart >= $yLimit ) {
+//                    
+//                }
+//                
+//                //Adiciona o canal ao array
+//                $slide[] = array(
+//                    "tipo" => "canal",
+//                    "nome" => $canal['nome']
+//                );
+//                
+//                //Divide os ambientes em duas colunas
+//                $ambientesCanal = $ambientes[$canalId];
+//                $totalAmbientes = count($ambientesCanal);
+//                $totalPorColuna = ceil( $totalAmbientes / 2 );
+//                $ambientesCol1 = array_slice($ambientesCanal, 0 ,$totalPorColuna);
+//                $ambientesCol2 = array_slice($ambientesCanal, $totalPorColuna);
+//                $slide[] = array(
+//                    'tipo' => 'ambientes',
+//                    'col1' => $ambientesCol1,
+//                    'col2' => $ambientesCol2
+//                );
+//                
+//                //Adiciona o slide à lista
+//                $slides[] = $slide;
+//            }
+//        }
+//        echo "<pre>";
+//        print_r($slides);
+//        die;
+//        die;
+        
+   
+        //CANAIS
+        foreach( $canais as $ic => $canal ) {
+            $paginas = array();
+            if( isset($ambientes[$canal['id']]) ) {
+                if( $yStart >= 900 ) {
+                    $currentSlide = $objPHPPowerPoint->createSlide();
+                    $yStart = 130;
+                            
+                    //Cabeçalho
+                    exibirCabecalho($currentSlide, $campanha, $cliente);
+                }
+                
+                $shape = $currentSlide->createRichTextShape();
+                $shape->setHeight(300);
+                $shape->setWidth(940);
+                $shape->setOffsetX(55);
+                $shape->setOffsetY($yStart);
+                $lin = $shape->createTextRun("CANAL " . strtoupper($canal['nome']));
+                $lin->getFont()->setBold(true);
+                $lin->getFont()->setSize(11);
+                $lin->getFont()->setName("Roboto Condensed");
+                $shape->createBreak();
+              
+                //Tabela
+                $ambientesCanal = $ambientes[$canal['id']];
+                $totalAmbientes = count($ambientesCanal);
+                $totalPorColuna = ceil( $totalAmbientes / 2 );
+                $ambientesCol1 = array_slice($ambientesCanal, 0 ,$totalPorColuna);
+                $ambientesCol2 = array_slice($ambientesCanal, $totalPorColuna);
+                $tableY = $yStart;
+                $yStart2 = $yStart;
+                
+                //Divide a tabela de acordo com a quebra de página
+                $p = 0;
+                $yInterv += 70;
+                for($c = 0; $c < $totalPorColuna; $c ++ ) {
+                    $yStart2 += 25;
+                    $paginas[$p]['col1'][] = $ambientesCol1[$c];
+                    if( isset($ambientesCol2[$c]) ) {
+                        $paginas[$p]['col2'][] = $ambientesCol2[$c];
+                    }
+                    if( $yStart2 >= 1090 ) {
+                        $yStart2 = 130;
+                        $p ++;
+                    }
+                    
+                }
+                foreach( $paginas as $p => $pagina ) {
+                    if( $p > 0 ) {
+                        $currentSlide = $objPHPPowerPoint->createSlide();
+                        $yStart = $tableY = 130;
+                            
+                        //Cabeçalho
+                        exibirCabecalho($currentSlide, $campanha, $cliente);
+                    }
+                    if( isset($pagina['col1']) ) {
+                        montarTabelaComprovantes($currentSlide, 1, $pagina['col1'], count($pagina['col1']), $tableY, $params, $pag, $assinatura);
+                        $yStart += count($pagina['col1']) * 25 + 70;
+                    }
+                    if( isset($pagina['col2']) ) {
+                        montarTabelaComprovantes($currentSlide, 2, $pagina['col2'], count($pagina['col1']), $tableY, $params);
+                    }
+                }
+            }
+        }
+        
+        //Mensagem final
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(40);
+        $shape->setWidth(700);
+        $shape->setOffsetX(65);
+        $shape->setOffsetY($yStart);
+        $lin = $shape->createTextRun("Ambientes grifados em ");
+        $lin->getFont()->setSize(9);
+        $lin->getFont()->setName("Roboto Condensed");
+        $lin = $shape->createTextRun("VERMELHO ");
+        $lin->getFont()->setColor( new PHPPowerPoint_Style_Color( '980000' ) );
+        $lin->getFont()->setSize(9);
+        $lin->getFont()->setName("Roboto Condensed");
+        $lin = $shape->createTextRun("comportam ocorrências no período de veiculação e/ou processo de checking fotográfico, tendo seus valores correspondentes abatidos conforme documentação complementar deste processo.");
+        $lin->getFont()->setColor( new PHPPowerPoint_Style_Color( '000000' ) );
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(9);
+        $lin->getFont()->setName("Roboto Condensed");
+    }
+    
+    /**
+     * Cria as linhas da tabela da capa
+     */
+    function montarTabelaCapa(&$table, $data) {
+        
+        foreach( $data as $col1 => $col2 ) {
+            $bold = false;
+            if( $col1 == "CLIENTE" || $col1 == "CAMPANHA" || $col1 == "PI" ) {
+               $bold = true;
+            }
+            
+            //COL1
+            $row = $table->createRow();
+            $cell = $row->nextCell();
+            $cell->setWidth(150);
+            $cell->getFill()
+                ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
+                ->setStartColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'))
+                ->setEndColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'));
+            $cell->createTextRun($col1)
+                   ->getFont()
+                   ->setSize(11)
+                   ->setName("Roboto Condensed");
+            $align = new \PHPPowerPoint_Style_Alignment();
+            $align->setVertical(\PHPPowerPoint_Style_Alignment::VERTICAL_CENTER);
+            $cell->getActiveParagraph()->setAlignment($align);
+
+            //COL2
+            $cell = $row->nextCell();
+            $cell->setWidth(410);
+            $cell->getFill()
+                ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
+                ->setStartColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'))
+                ->setEndColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
+            $cell->createTextRun($col2)
+                    ->getFont()
+                    ->setSize(11)
+                    ->setBold($bold)
+                    ->setName("Roboto Condensed");
+            $cell->getActiveParagraph()->setAlignment($align);
+        }
+    }
+    
+    /**
+     * Monta a tabela de comprovantes
+     */
+    function montarTabelaComprovantes($currentSlide, $col = 1, $ambientes = array(), 
+            $totalPorColuna, $tableY, &$params, &$pag = null, $assinatura = null) {
+        
+//        echo "<pre>";
+//        print_r($ambientes);
+//        die;
+        
+        $xTable = ( $col == 1 ) ? 65 : 400;
+
+        //Fonte
+        $font = new PHPPowerPoint_Style_Font();
+        $font->setSize(8)
+             ->setBold(true)
+             ->setName("Roboto Condensed");
+        $font2 = clone $font;
+        $font2->setBold(false);
+        
+        //Alinhamento
+        $align = new \PHPPowerPoint_Style_Alignment();
+        $align->setHorizontal(\PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER);
+        
+        //Formatação da célula de título
+        $fill = new PHPPowerPoint_Style_Fill();
+        $fill->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR);
+        $fill->setStartColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
+        $fill->setEndColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
+        $fill2 = new PHPPowerPoint_Style_Fill();
+        $fill2->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR);
+        $fill2->setStartColor(new \PHPPowerPoint_Style_Color('f4f1e8'));
+        $fill2->setEndColor(new \PHPPowerPoint_Style_Color('f4f1e8'));
+        $borderColor = new \PHPPowerPoint_Style_Color('f4f1e8');
+        
+        //Tabela
+        $table = $currentSlide->createTableShape(3);
+        $table->setWidth(650);
+        $table->setOffsetX($xTable);
+        $table->setOffsetY($tableY + 35);
+        
+        //Linha título
+        $row = $table->createRow();
+        $row->setHeight(15);
+        
+        $cell = $row->nextCell();
+        $cell->setWidth(200);
+        $cell->setFill($fill);
+        $cell->createTextRun("AMBIENTE")->setFont($font);
+        $cell->getBorders()->getBottom()->setColor($borderColor);
+        $cell->getBorders()->getLeft()->setColor($borderColor);
+        $cell->getBorders()->getRight()->setColor($borderColor);
+        $cell->getBorders()->getTop()->setColor($borderColor);
+        $cell->getActiveParagraph()->setAlignment($align);
+                
+        $cell = $row->nextCell();
+        $cell->setWidth(60);
+        $cell->setFill($fill);
+        $cell->getActiveParagraph()->setAlignment($align);
+        $cell->createTextRun("TELAS")->setFont($font);
+        $cell->getBorders()->getBottom()->setColor($borderColor);
+        $cell->getBorders()->getLeft()->setColor($borderColor);
+        $cell->getBorders()->getRight()->setColor($borderColor);
+        $cell->getBorders()->getTop()->setColor($borderColor);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        $cell = $row->nextCell();
+        $cell->setWidth(60);
+        $cell->getActiveParagraph()->setAlignment($align);
+        $cell->createTextRun("PÁGINA")->setFont($font);
+        $cell->setFill($fill2);
+        $cell->getBorders()->getBottom()->setColor($borderColor);
+        $cell->getBorders()->getLeft()->setColor($borderColor);
+        $cell->getBorders()->getRight()->setColor($borderColor);
+        $cell->getBorders()->getTop()->setColor($borderColor);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        //Linhas
+        if( $ambientes ) {
+            for( $i = 0; $i < $totalPorColuna; $i ++ ) {
+                $ambienteId = null;    
+                if( isset($ambientes[$i]) ) {
+                    $ambienteNome = $ambientes[$i]['nome'];
+                    $ambienteId = $ambientes[$i]['id'];
+                } else {
+                    $ambienteNome = " ";
+                }
+                $row = $table->createRow();
+                $row->setHeight(15);
+
+                $cell = $row->nextCell();
+                $textRun = $cell->createTextRun($ambienteNome);
+                $textRun->setFont($font2);
+                $cell->setFill($fill);
+                $cell->getBorders()->getBottom()->setColor($borderColor);
+                $cell->getBorders()->getLeft()->setColor($borderColor);
+                $cell->getBorders()->getRight()->setColor($borderColor);
+                $cell->getBorders()->getTop()->setColor($borderColor);
+                
+                $cell = $row->nextCell();
+                $cell->createTextRun(@$ambientes[$i]['telas']." ")->setFont($font2);
+                $cell->setFill($fill);
+                $cell->getActiveParagraph()->setAlignment($align);
+                $cell->getBorders()->getBottom()->setColor($borderColor);
+                $cell->getBorders()->getLeft()->setColor($borderColor);
+                $cell->getBorders()->getRight()->setColor($borderColor);
+                $cell->getBorders()->getTop()->setColor($borderColor);
+                
+                //Página
+                $cell = $row->nextCell();
+                $cell->createTextRun("0")->setFont($font);
+                $cell->setFill($fill);
+                $cell->getActiveParagraph()->setAlignment($align);
+                $cell->getBorders()->getBottom()->setColor($borderColor);
+                $cell->getBorders()->getLeft()->setColor($borderColor);
+                $cell->getBorders()->getRight()->setColor($borderColor);
+                $cell->getBorders()->getTop()->setColor($borderColor);
+                $cell->setFill($fill2);
+                if( $ambienteId ) {
+                    $params['ambientesMap'][$ambienteId] = $cell;
+                }
+            }
+        }
+        
+        //Exibe o rodapé
+        if( $pag ) {
+            exibirRodape($currentSlide, $pag, $assinatura);
+        }
+    }
+    
+    
+    /**
+     * Cabeçalho
+     */
+    function exibirCabecalho($currentSlide, $campanha, $cliente) {
+        
+        //Alinhamento
+        $align = new \PHPPowerPoint_Style_Alignment();
+        $align->setVertical(\PHPPowerPoint_Style_Alignment::VERTICAL_CENTER);
+        
+        //Fonte
+        $font = new PHPPowerPoint_Style_Font();
+        $font->setColor( new PHPPowerPoint_Style_Color( 'FFFFFFFF' ) )
+                ->setSize(9)
+                ->setBold(true)
+                ->setName("Roboto Condensed");
+        $fontDesc = clone $font;
+        $fontDesc->setColor( new PHPPowerPoint_Style_Color( '00000000' ) );
+        $fontDesc->setBold(false);
+ 
+        //Formatação da célula de título
+        $fillTitle = new PHPPowerPoint_Style_Fill();
+        $fillTitle->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR);
+        $fillTitle->setStartColor(new \PHPPowerPoint_Style_Color('00674ea7'));
+        $fillTitle->setEndColor(new \PHPPowerPoint_Style_Color('00674ea7'));
+        
+        //Formatação da célula de descrição
+        $fillDesc = clone $fillTitle;
+        $fillDesc->setStartColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
+        $fillDesc->setEndColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
+        
+        //Tabela
+        $table = $currentSlide->createTableShape(6);
+        $table->setWidth(940);
+        $table->setOffsetX(65);
+        $table->setOffsetY(40);
+        
+        #Lin1
+        $row = $table->createRow();
+        $row->setHeight(15);
+        
+        //cliente
+        $cell = $row->nextCell();
+        $cell->setWidth(70);
+        $cell->setFill($fillTitle);
+        $cell->createTextRun(utf8_encode("CLIENTE"))->setFont($font);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        $cell = $row->nextCell();
+        $cell->setWidth(150);
+        $cell->setFill($fillDesc);
+        $cell->createTextRun(utf8_encode($cliente['nome_comercial'] . " "))->setFont($fontDesc);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        //campanha
+        $cell = $row->nextCell();
+        $cell->getActiveParagraph()->getFont()->setSize(9);
+        $cell->setWidth(80);
+        $cell->setFill($fillTitle);
+        $cell->createTextRun(utf8_encode("CAMPANHA"))->setFont($font);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        $cell = $row->nextCell();
+        $cell->setWidth(200);
+        $cell->setFill($fillDesc);
+        $cell->createTextRun(utf8_encode($campanha['nome'] . " "))->setFont($fontDesc);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        //incio
+        $cell = $row->nextCell();
+        $cell->getActiveParagraph()->getFont()->setSize(9);
+        $cell->setWidth(60);
+        $cell->setFill($fillTitle);
+        $cell->createTextRun(utf8_encode("INICIO"))->setFont($font);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        $cell = $row->nextCell();
+        $cell->setWidth(90);
+        $cell->setFill($fillDesc);
+        $cell->createTextRun(Core_Global::dataBr($campanha['inicio'] . " "))->setFont($fontDesc);
+        $cell->getActiveParagraph()->setAlignment($align);
+
+        #Lin2
+        $row = $table->createRow();
+        $row->setHeight(15);
+        
+        //produto
+        $cellTitle = $row->nextCell();
+        $cellTitle->createTextRun("PRODUTO")->setFont($font);
+        $cellTitle->setFill($fillTitle);
+        
+        $cell = $row->nextCell();
+        $cell->setFill($fillDesc);
+        $cell->createTextRun(utf8_encode($campanha['produto'] . " "))->setFont($fontDesc);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        //peças
+        $cellTitle = $row->nextCell();
+        $cellTitle->createTextRun(utf8_encode("PECAS"))->setFont($font);
+        $cellTitle->setFill($fillTitle);
+         
+        $cell = $row->nextCell();
+        $cell->setFill($fillDesc);
+        $cell->createTextRun($campanha['n_pecas'] . " ")->setFont($fontDesc);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        //periodo
+        $cell = $row->nextCell();
+        $cell->getActiveParagraph()->getFont()->setSize(9);
+        $cell->setFill($fillTitle);
+        $cell->createTextRun(utf8_encode("FIM") . " ")->setFont($font);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        $cell = $row->nextCell();
+        $cell->setFill($fillDesc);
+        $cell->createTextRun(Core_Global::dataBr($campanha['fim']) . " ")->setFont($fontDesc);
+        $cell->getActiveParagraph()->setAlignment($align);
+    }
+    
+    /**
+     * Rodapé
+     */
+    function exibirRodape($currentSlide, &$pag, $assinatura) {
+        $img = "lookindoorlogotipo.jpg";
+        
+        //logo
+        $shape = $currentSlide->createDrawingShape();
+        $shape->setPath('./img/' . $img);
+        $shape->setHeight(20);
+        $shape->setOffsetX(30);
+        $shape->setOffsetY(1044);
+        
+        //texto
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(40);
+        $shape->setWidth(700);
+        $shape->setOffsetX(70);
+        $shape->setOffsetY(1040);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+        $lin = $shape->createTextRun(utf8_encode("OPEC: "));
+        $lin->getFont()->setBold(true);
+        $lin = $shape->createTextRun(utf8_encode($assinatura));
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(8);
+        $lin->getFont()->setName("Roboto Condensed");
+        
+        //Exibe o número da página
+        exibirNumeroPagina($currentSlide, $pag);
+    }
+    
+    /**
+     * Gera o número da página
+     */
+    function exibirNumeroPagina($currentSlide, &$pag) {
+
+        //Página
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(30);
+        $shape->setWidth(60);
+        $shape->setOffsetX(730);
+        $shape->setOffsetY(1045);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+
+        $lin = $shape->createTextRun($pag);
+        $lin->getFont()->setSize(9)->setBold(false)->setName("Roboto Condensed");
+        $shape->createBreak();
+        
+        $pag++;
+    }
+    
+    /**
+     * Monta as cartelas de referências
+     */
+    function montarCartelas($params) {
+        $currentSlide = $params['currentSlide'];
+        $campanha = $params['campanha'];
+        $cliente = $params['cliente'];
+        $pag = &$params['pag'];
+        $assinatura = $params['assinatura'];
+        
+        //Cabeçalho
+        exibirCabecalho($currentSlide, $campanha, $cliente);
+        
+        //TITULO
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(300);
+        $shape->setWidth(600);
+        $shape->setOffsetX(100);
+        $shape->setOffsetY(130);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+        $lin = $shape->createTextRun("CARTELAS DE REFERÊNCIA _ PEÇA: ");
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(18);
+        $lin->getFont()->setName("Roboto Condensed");
+        $lin = $shape->createTextRun(utf8_encode($campanha['nome']));
+        $lin->getFont()->setBold(true);
+        $lin->getFont()->setSize(18);
+        $lin->getFont()->setName("Roboto Condensed");
+        $shape->createBreak();
+        $lin = $shape->createTextRun("As imagens de comprovação podem apresentar diferenças de tonalidade em relação às cartelas de referência devido a condições de captura fotográfica e sistema de impressão deste documento.");
+        $lin->getFont()->setBold(false);
+        $lin->getFont()->setSize(9);
+        $lin->getFont()->setName("Roboto Condensed");
+        
+        //Rodapé
+        exibirRodape($currentSlide, $pag, $assinatura);
+    }
+    
+    /**
+     * Exibir fotografias
+     */
+    function exibirFotos(&$params) {
+        $objPHPPowerPoint = $params['objPHPPowerPoint'];
+        $campanha = $params['campanha'];
+        $cliente = $params['cliente'];
+        $indices = $params['indices'];
+        $ambientes = $params['ambientes'];
+        $pag = &$params['pag'];
+        $assinatura = $params['assinatura'];
+        
+        //Gera os slides
+        $slidesDados = array();
+        $idx = 0;
+        $porPagina = 6;
+        $ultimoAmbiente = null;
+        $countImg = null;
+        foreach( $indices as $i => $indice ) {
+            if( $i > 0 && $i % $porPagina == 0 ) {
+                $idx ++;
+            }
+            $slidesDados[$idx][] = $indice;
+        }
+        foreach( $slidesDados as $slideDados ) {
+            $currentSlide = $objPHPPowerPoint->createSlide();
+            exibirCabecalho($currentSlide, $campanha, $cliente);
+            montarSlideFotos($slideDados, $currentSlide, $campanha, $cliente, $ambientes, 
+                    $ultimoAmbiente, $countImg, $params);
+            exibirRodape($currentSlide, $pag, $assinatura);
+        }
+    }
+    
+    /**
+     * Exibe o slide de fotos
+     */
+    function montarSlideFotos($slideDados, $currentSlide, $campanha, $cliente, $ambientes, &$ultimoAmbiente, &$countImg, &$params) {
+        
+        //Posições
+        $imgWidth = 318;
+        $xy = array(
+            //lin1
+            array('xImg'=>63,'yImg'=>130),
+            array('xImg'=>400,'yImg'=>130), 
+            //lin2
+            array('xImg'=>63,'yImg'=>430),
+            array('xImg'=>400,'yImg'=>430),
+            //lin3
+            array('xImg'=>63,'yImg'=>730),
+            array('xImg'=>400,'yImg'=>730),
+        );
+                
+        //Fotos
+        $ultimaFoto = null;
+        foreach( $slideDados as $f => $foto ) {
+            exibirFoto($currentSlide, $foto, $xy[$f]['xImg'], $xy[$f]['yImg'], $imgWidth, $ultimoAmbiente, $countImg, $params);
+        }
+    }
+    
+    /**
+     * Carrega a foto
+     */
+    function exibirFoto($currentSlide, $indice, $x, $y, $width, &$ultimoAmbiente, &$countImg, &$params) {
+        if( $indice['id_ambiente'] != $ultimoAmbiente ) {
+            $ultimoAmbiente = $indice['id_ambiente'];
+            $countImg = 1;
+            
+            //Altera a página no slide de comprovantes
+            if( isset($params['ambientesMap'][$ultimoAmbiente]) ) {
+                $p = $params['objPHPPowerPoint']->getIndex($currentSlide);
+                $paragraphs = $params['ambientesMap'][$ultimoAmbiente]->getParagraphs();
+                $elements = $paragraphs[0]->getRichTextElements();
+                $elements[0]->setText($p);
+            }
+        }
+
+        $borderColor = new \PHPPowerPoint_Style_Color('F3F3F3F3');
+
+        //Modura da foto
+        $table = $currentSlide->createTableShape(1);
+        $table->setWidth($width);
+        $table->setOffsetX($x);
+        $table->setOffsetY($y);
+        
+        $row = $table->createRow();
+        $cell = $row->nextCell();
+        $cell->getFill()
+            ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
+            ->setStartColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'))
+            ->setEndColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'));
+        $cell->createTextRun($indice['nome_ambiente'] . " ($countImg)")
+               ->getFont()
+               ->setSize(11)
+               ->setBold(true)
+               ->setName("Roboto Condensed");
+        $align = new \PHPPowerPoint_Style_Alignment();
+        $align->setHorizontal(\PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER);
+        $align->setVertical(\PHPPowerPoint_Style_Alignment::VERTICAL_CENTER);
+        $cell->getActiveParagraph()->setAlignment($align);
+        
+        //esconde as bordas
+        $cell->getBorders()->getBottom()->setColor($borderColor);
+        $cell->getBorders()->getLeft()->setColor($borderColor);
+        $cell->getBorders()->getRight()->setColor($borderColor);
+        $cell->getBorders()->getTop()->setColor($borderColor);
+
+        //foto
+        $row = $table->createRow();
+        $row->setHeight(195);
+        $cell = $row->nextCell();
+        $cell->getFill()
+            ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
+            ->setStartColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'))
+            ->setEndColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
+        $cell->getBorders()->getBottom()->setColor($borderColor);
+        $cell->getBorders()->getLeft()->setColor($borderColor);
+        $cell->getBorders()->getRight()->setColor($borderColor);
+        $cell->getBorders()->getTop()->setColor($borderColor);
+        
+        $fotoImg = $currentSlide->createDrawingShape();
+        $fotoImg->setPath($indice['fotoLocal']);
+        $fotoImg->setWidth($width - 10 );
+        $fotoImg->setOffsetX($x + 5);
+        $fotoImg->setOffsetY($y + 50);
+                
+        $countImg++;
+    }

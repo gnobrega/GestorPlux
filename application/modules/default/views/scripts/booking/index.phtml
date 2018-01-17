@@ -17,11 +17,16 @@
     <div class="col-md-12">
 
         <?php
+            $this->lineButtons = true;
+            
             //STEP PHOTOS
             echo $this->render("booking/step-form.phtml");
             
             //STEP PHOTOS
             echo $this->render("booking/step-photos.phtml");
+            
+            //STEP EXPORT
+            echo $this->render("booking/step-export.phtml");
         ?>
     </div>
 </div>
@@ -35,19 +40,19 @@
 
         //Etapas
         $("div.booking-content").on("click", "div.step-buttons button.btn-back", function (e) {
-                e.preventDefault();
-                if ($(this).hasClass("disabled")) {
-                    return false;
-                }
-                $btnStep = $("div.booking-steps button.btn-success");
-                var step = $btnStep.parent().index();
-                if ($(this).hasClass('btn-next')) {
-                    step++;
-                } else {
-                    step--;
-                }
-                toStep(step);
-            });
+            e.preventDefault();
+            if ($(this).hasClass("disabled")) {
+                return false;
+            }
+            $btnStep = $("div.booking-steps button.btn-success");
+            var step = $btnStep.parent().index();
+            if ($(this).hasClass('btn-next')) {
+                step++;
+            } else {
+                step--;
+            }
+            toStep(step);
+        });
     });
     
     //Navega entre as etapas
@@ -77,8 +82,9 @@
         enableButton($btnNextStep, "btn-success");
         if (step < (totalButtons - 1)) {
             enableButton($btnNext, 'btn-primary');
-        } else {
-            disableButton($btnNext, 'btn-primary');
+        } else { //Última etapa
+            enableButton($btnNext, 'btn-primary');
+            $btnNext.html("Finalizar");
         }
         if (step > 0) {
             enableButton($btnBack, 'btn-primary');
@@ -106,7 +112,9 @@
         
         //Chama os eventos da tab
         if( step == 1 ) {
-            carregarFiltros();
+            stepPhotosInit();
+        } else if( step == 2 ) {
+            stepExportInit();
         }
     }
 </script>

@@ -1,0 +1,74 @@
+<!-- STEP PHOTOS -->
+<div class="tab-booking tab-export animated fadeInRight" id="tab-step-export" style="display:none">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Exportação <small>Selecione uma opção</small></h5>
+                </div>
+                <div class="ibox-content form-horizontal">
+                    <form id="form-export-booking" action="" method="post" class="form-horizontal">
+                        
+                        <!-- Total -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">Total</label>
+                            <div class="col-sm-10"><label class="label-subinfo"><span id="sp-itens-selected">0</span> fotos selecionadas</label></div>
+                        </div>
+                        
+                        <!-- Pendências -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">Pendências</label>
+                            <div class="col-sm-10">
+                                <div class="label-subinfo">
+                                    0
+                                    <!--Park Shopping (2) /
+                                    Academia Runway (1) /
+                                    Oba (3)-->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Botão de exportação -->
+                        <br />
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">
+                                <button id="btnExport" class="btn btn-success btn-lg"><i class="fa fa-download"></i> Exportar</button>
+                            </label>
+                            <div class="col-sm-10">
+                            </div>
+                        </div>
+                        
+                    </form>
+                    <?php echo $this->render("booking/step-buttons.phtml"); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    //Inicia as ações da etapa
+    function stepExportInit() {
+        $("#sp-itens-selected").html(listaFotos.length);
+    }
+    
+    //Exportação
+    $("button#btnExport").on("click", function(e) {
+        e.preventDefault();
+        var params = {
+            campanhaId : $("select[name='id_campanha']").val(),
+            constTipo : $("select[name='tipo']").val(),
+            canaisIds :  $("select[name='canais[]']").val(),
+            constLayout : $("select[name=layout]").val(),
+            assinatura  : $("input[name=assinatura]").val(),
+            fotos : listaFotos
+        }
+        var url = "/booking/exportar/?" + $.param(params);
+        var popup = window.open(url);             
+        if( !popup || popup.closed || typeof popup.closed=='undefined' ) { 
+            toastr.warning("Um pop-up foi bloqueado. É necessário realizar a liberação no browser.");
+        }
+    });
+
+</script>

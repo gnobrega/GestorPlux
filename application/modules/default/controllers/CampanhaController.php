@@ -87,6 +87,16 @@ class CampanhaController extends AbstractController {
                 ->setName("_pi")
                 ->setLabel("PI");
         
+        //Número de peças
+        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_n_pecas")
+                ->setLabel("Número de peças");
+        
+        //Produto
+        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_produto")
+                ->setLabel("Produto");
+        
         //Canais
         $campoCanal = $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
                 ->setTable("canal")
@@ -105,6 +115,18 @@ class CampanhaController extends AbstractController {
                 ->setAttr("firstNull", false)
                 ->setMultiple(true)
                 ->setEmpty(true);
+        
+        //Início
+        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_inicio")
+                ->setLabel("Início")
+                ->addClass("date");
+        
+        //Fim
+        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+                ->setName("_fim")
+                ->setLabel("Fim")
+                ->addClass("date");
     }
     
     /**
@@ -117,6 +139,8 @@ class CampanhaController extends AbstractController {
         
         //Carrega os dados
         $registro = $this->_model->find($this->getParam('id'))->current()->toArray();
+        $registro['inicio'] = Core_Global::dataBr($registro['inicio']);
+        $registro['fim'] = Core_Global::dataBr($registro['fim']);
         Core_Global::encodeListUtf($registro);
         
         //Carrega os relacionamentos com os canais
@@ -142,6 +166,8 @@ class CampanhaController extends AbstractController {
     }
     
     public function salvarAction($return = false) {
+        $_POST['_inicio'] = Core_Global::dataIso($_POST['_inicio']);
+        $_POST['_fim'] = Core_Global::dataIso($_POST['_fim']);
         $rs = parent::salvarAction(true);
         
         //Cria o relacionamento com os canais

@@ -33,6 +33,9 @@ class Constants {
         1 => "Telefone",
         2 => "Email"
     );
+    static $BOOKING_LAYOUT = array(
+        1 => "Padrão"
+    );
         
     /**
      * Recupera um valor específico

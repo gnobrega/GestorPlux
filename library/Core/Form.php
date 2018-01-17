@@ -6,7 +6,7 @@
  * @author gustavonobrega
  */
 class Core_Form {
-    private $_id;
+    public $_id;
     private $_action;
     private $_method = "post";
     private $_fields = array();

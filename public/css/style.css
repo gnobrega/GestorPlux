@@ -8578,3 +8578,7 @@ div.file-box div.file.selected div.over,
 div.file-box div.file.selected div.correct {
     display: initial;
 }
+.label-subinfo {
+    padding-top: 7px;
+    font-weight: normal;
+}

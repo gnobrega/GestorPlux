@@ -38,24 +38,28 @@
                                 <label id="combo-canais[]-error" class="error" for="combo-canais[]"></label>
                             </div>
                         </div>
-                        
-                        <!-- Data de emissão 
-                        <div class="form-group">
-                            <label for="" class="col-sm-2 control-label">* Data de emissão</label>
-                            <div class="col-sm-10">
-                                <div class="input-group date">
-                                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                                    <input type="text" name="data_emissao" class="form-control datepicker" required>
-                                </div>
-                                <label id="data_emissao-error" class="error" for="data_emissao"></label>
-                            </div>
-                        </div>-->
-                        
-                        <!-- Campanha -->
+                                         
+                        <!-- Campanha 
                         <div class="form-group">
                             <label for="" class="col-sm-2 control-label">Número da Nota</label>
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" name="n_nota" />
+                            </div>
+                        </div>-->
+                                         
+                        <!-- Layout -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">Layout</label>
+                            <div class="col-sm-10">
+                                <?php echo $this->Component()->comboConstant('BOOKING_LAYOUT', "layout", array("firstNull"=>false)); ?>
+                            </div>
+                        </div>
+                                         
+                        <!-- Assinatura -->
+                        <div class="form-group">
+                            <label for="" class="col-sm-2 control-label">Assinatura</label>
+                            <div class="col-sm-10">
+                                <input type="text" name="assinatura" class="form-control" value="Rafael Rodrigo de Araújo de Souza _ CPF: 736.922.981-53 _ RG: 2.378.507 - SSP/DF" />
                             </div>
                         </div>
 
@@ -79,9 +83,9 @@
     Form.filterCombo($comboCanal, $comboCampanha, "/campanha/canais-por-campanha");
         
     //Submete o formulário
+    $("button.btn-next").off("click");
     $("button.btn-next").on("click", function() {
         $("form#form-booking").submit();    
-//toStep(1);
     });
     $("form#form-booking").on("submit", function(e) {
         if( $("#form-booking").valid() ) {

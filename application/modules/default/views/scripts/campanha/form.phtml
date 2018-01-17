@@ -21,6 +21,7 @@
     var ambientesId = null;
     var agenciaId = null
     <?php
+        echo "var formId = '{$this->form->_id}';\n";
         if( isset($this->registro['ambientes']) ) {
             echo "ambientesId = '" .implode(",", $this->registro['ambientes']) . "'\n";
             echo "ambientesId = ambientesId.split(',');\n";
@@ -31,6 +32,7 @@
     ?>
         
     $(function() {
+        Form.init(formId);
         
         //Preenche a combo de ambientes
         $("select[name='canais[]']").on("change", function() {
