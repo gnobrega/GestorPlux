@@ -674,6 +674,22 @@ class Core_Global {
         $uriAction = "/" . $module . "/" . $controller . "/" . $action;
         return $uriAction;
     }
+    
+    /**
+     * Adiciona a máscara do cnpj
+     */
+    public static function formatCnpj(&$cnpj) {
+        $cnpjMask = substr($cnpj, 0, 3);
+        $cnpjMask .= ".";
+        $cnpjMask .= substr($cnpj, 3, 3);
+        $cnpjMask .= ".";
+        $cnpjMask .= substr($cnpj, 6, 3);
+        $cnpjMask .= "/";
+        $cnpjMask .= substr($cnpj, 9, 4);
+        $cnpjMask .= "-";
+        $cnpjMask .= substr($cnpj, 13, 2);
+        $cnpj = $cnpjMask;
+    }
 }
 
 ?>

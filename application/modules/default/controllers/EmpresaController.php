@@ -29,6 +29,7 @@ class EmpresaController extends AbstractController {
         $this->view->grid = new Core_Grid($this->_entity);
         $this->view->grid->addColumn("Id", "id");
         $this->view->grid->addColumn("Nome Comercial", "nome_comercial");
+        $this->view->grid->addColumn("Razão Social", "razao_social");
     }
     
     /**
@@ -40,7 +41,16 @@ class EmpresaController extends AbstractController {
         $this->addBreadcrumb("Cadastro");
         
         //Monta o formulário
-        $this->montarForm();
+        $importacao = null;
+        if( isset($_GET['importacao']) ) {
+            $importacao = array(
+                "nome_comercial"        => $_GET['importacao']['nome_comercial'],
+                "razao_social"          => $_GET['importacao']['razao_social'],
+                "cnpj"                  => $_GET['importacao']['cnpj'],
+                "inscricao_estadual"    => $_GET['importacao']['inscricao_estadual']
+            );
+        }
+        $this->montarForm(array(), $importacao);
         
         //Renderiza a view
         $this->renderScript($this->_entity.'/form.phtml');
@@ -49,7 +59,7 @@ class EmpresaController extends AbstractController {
     /**
      * Monta o formulário
      */
-    public function montarForm($registro = array()) {
+    public function montarForm($registro = array(), $importacao = null) {
         $this->view->form = new Core_Form("/".$this->_entity."/salvar");
         $this->view->form->setData($registro);
         
@@ -60,7 +70,7 @@ class EmpresaController extends AbstractController {
         }
         
         //Nome Comercial
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoNomeComercial = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_nome_comercial")
                 ->setLabel("Nome Comercial")
                 ->setRequired(true)
@@ -77,18 +87,18 @@ class EmpresaController extends AbstractController {
         }
         
         //Razão Social
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoRazaoSocial = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_razao_social")
                 ->setLabel("Razão Social");
         
         //Cnpj
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoCnpj = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_cnpj")
                 ->setLabel("Cnpj")
                 ->addClass("cnpj");
         
         //Inscrição Estadual
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoInscEstadual = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_inscricao_estadual")
                 ->setLabel("Inscrição Estadual");
         
@@ -120,7 +130,7 @@ class EmpresaController extends AbstractController {
         
         //Exibe publicidade
         $exibPubValor = ( isset($registro['exibe_publicidade']) ) ? $registro['exibe_publicidade'] : '0';
-        $this->view->form->addField(Core_Form_Field::$TYPE_RADIO)
+        $campoPublicidade = $this->view->form->addField(Core_Form_Field::$TYPE_RADIO)
                 ->setName("_exibe_publicidade")
                 ->setLabel("Exibe publicidade?")
                 ->setValue($exibPubValor)
@@ -135,6 +145,15 @@ class EmpresaController extends AbstractController {
                 ->setValue($agencia)
                 ->addItem("Sim", 1)
                 ->addItem("Não", 0);
+        
+        //Preenche os campos com os dados vindo de importação
+        if( $importacao ) {
+            $campoNomeComercial->setValue($importacao['nome_comercial']);
+            $campoRazaoSocial->setValue($importacao['razao_social']);
+            $campoCnpj->setValue($importacao['cnpj']);
+            $campoInscEstadual->setValue($importacao['inscricao_estadual']);
+            $campoPublicidade->setValue(1);
+        }
     }
     
     /**
@@ -207,6 +226,126 @@ class EmpresaController extends AbstractController {
         }
         Core_Global::encodeListUtf($agencias, true);
         $this->returnSuccess(null, $agencias);
+        die;
+    }
+    
+    /**
+     * Importa os registros do sistema antigo
+     */
+    public function importarAction() {
+        
+        //Breadcrumb
+        $this->addBreadcrumb("Importação");
+        
+        $this->view->parceiros = $this->carregarPontosLook();
+    }
+    
+    /**
+     * Carrega os pontos do sistema da Look
+     */
+    public function carregarParceirosLook() {
+        
+        //Se conecta ao gestor antigo
+        $con = mysqli_connect(GESTOR_LOOK_DB_HOST, GESTOR_LOOK_DB_USER, GESTOR_LOOK_DB_PASS, GESTOR_LOOK_DB_NAME);
+        if( !$con ) {
+            echo mysqli_error($con);
+            die;
+        }
+        
+        //Carrega os parceiros
+        $sql = " 
+                SELECT 
+                    partner.id,
+                    partner.nome, 
+                    contract.nome razaoSocial,
+                    contract.cpfCnpj,
+                    contract.inscricaoEstadual
+                FROM 
+                    partner
+                INNER JOIN
+                    contract ON contract.partnerId = partner.id
+                ORDER BY
+                    partner.id DESC
+            ";
+        $query = mysqli_query($con, $sql);
+        $parceiros = array();
+        
+        //Carrega as empresas do novo gestor
+        $mdlEmpresa = new Model_Empresa();
+        $empresas = $mdlEmpresa->fetchAll()->toArray();
+        while( $parceiro = mysqli_fetch_array($query) ) {
+            
+            //Trata o cnpj
+            $cnpj = $parceiro['cpfCnpj'];
+            if( strlen(trim($cnpj)) <= 11 ) {
+                $cnpj = "";
+            } else {
+                $cnpj = str_replace(".", "", $cnpj);
+                $cnpj = str_replace("/", "", $cnpj);
+                $cnpj = str_replace("-", "", $cnpj);
+                switch( strlen(trim($cnpj)) ) {
+                    case 13:
+                        $cnpj = "00".$cnpj;
+                        break;
+                    case 14:
+                        $cnpj = "0".$cnpj;
+                        break;
+                }
+                Core_Global::formatCnpj($cnpj);
+            }
+                $continue = false;
+            foreach( $empresas as $empresa ) {
+                if( $empresa['razao_social'] == $parceiro['razaoSocial'] ) {
+                    $continue = true;
+                    break;
+                }
+            }
+
+            if( $continue ) {
+                continue;
+            }
+            $parceiros[] = array(
+                "id"                    => $parceiro['id'],
+                "nome_comercial"        => utf8_encode($parceiro['nome']),
+                "razao_social"          => utf8_encode($parceiro['razaoSocial']),
+                "cnpj"                  => $cnpj,
+                "inscricao_estadual"    => $parceiro['inscricaoEstadual']
+            );
+        }
+        
+        return $parceiros;
+    }
+    
+    /**
+     * Importa todos os ambientes/pontos
+     */
+    public function importarTodosAction() {
+        
+        //Verifica se a tabela está limpa
+        $mdlEmpresa = new Model_Empresa();
+        $empresas = $mdlEmpresa->fetchAll()->toArray();
+        if( count($empresas) ) {
+            Core_Notificacao::adicionarMensagem("Para a importação completa, a tabela empresa deve estar vazia");
+            $this->redirect("/empresa");
+        }
+        
+        //Carrega os parceiros
+        $parceiros = $this->carregarParceirosLook();
+        
+        //Realiza as inserções
+        $mdlEmpresa = new Model_Empresa();
+        $mdlAmbiente = new Model_Ambiente();
+        $idIncrement = 1;
+        foreach( $parceiros as $parceiro ) {
+            $parceiro['id_parceiro_look']  = $parceiro['id'];
+            $parceiro['exibe_publicidade'] = 1;
+            $parceiro['nome_comercial']    = utf8_decode($parceiro['nome_comercial']);
+            $parceiro['razao_social']      = utf8_decode($parceiro['razao_social']);
+            $parceiro['id']                = $idIncrement;
+            $mdlEmpresa->insert($parceiro);
+            $idIncrement ++;
+        }
+        $this->returnSuccess("Importação realizada com sucesso");
         die;
     }
 }

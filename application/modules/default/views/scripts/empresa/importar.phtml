@@ -1,0 +1,83 @@
+<!-- Content Header (Page header) -->
+<?php echo $this->page()->header("Lista de empresas") ?>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <!-- Botão voltar -->
+                <button type="button" class="btn btn-default btn-voltar"><i class="fa fa-mail-reply"></i> Voltar</button>
+                &nbsp;
+            </div>
+            <div class="ibox-content">
+                
+                <!-- Grid -->
+                <table class="table tb-parceiros">
+                    <thead>
+                        <th>Id</th>
+                        <th>Nome comercial</th>
+                        <th>Razão social</th>
+                        <th>Cnpj</th>
+                        <th>Inscrição estadual</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <?php
+                            foreach( $this->parceiros as $parceiro ) {
+                                echo "<tr>";
+                                echo "<td>{$parceiro['id']}</td>";
+                                echo "<td>{$parceiro['nome_comercial']}</td>";
+                                echo "<td>{$parceiro['razao_social']}</td>";
+                                echo "<td>{$parceiro['cnpj']}</td>";
+                                echo "<td>{$parceiro['inscricao_estadual']}</td>";
+                                echo "<td><button class='btn btn-primary btn-importar'>Importar</button></td>";
+                                echo "</tr>";
+                            }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var auto = false;
+    <?php
+        if( isset($_GET['auto']) ) {
+            echo "auto = true;\n";
+        }
+    ?>
+
+    //Inicia o processo de importação
+    $("table.tb-parceiros button.btn-importar").on("click", function(e) {
+        e.preventDefault();
+        var $tr = $(this).closest("tr");
+        importar($tr);
+    });
+    
+    //Autoimportação
+    if( auto ) {
+        $("table.tb-parceiros tr").each(function(i) {
+            importar($(this), true);
+            if( parseInt(i) >= 20 ) {
+                return false;
+            }
+        });
+    }
+    
+    function importar($tr, popup) {
+        var dados = {
+            'importacao' : {
+                'nome_comercial' : $tr.find('td').eq(1).html(),
+                'razao_social' : $tr.find('td').eq(2).html(),
+                'cnpj' : $tr.find('td').eq(3).html(),
+                'inscricao_estadual' : $tr.find('td').eq(4).html()
+            }
+        };
+        if( !popup ) {
+            window.location = "/empresa/cadastrar?" + $.param(dados);
+        } else {
+            window.open("/empresa/cadastrar?" + $.param(dados));
+        }
+    }
+</script>

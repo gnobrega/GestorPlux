@@ -127,4 +127,98 @@ class AmbienteController extends AbstractController {
         echo json_encode($lst);
         die;
     }
+    
+    /**
+     * Importa todos os pontos do Gestor Look
+     */
+    public function importarTodosAction() {
+        
+        //Verifica se a tabela está limpa
+        $mdlAmbiente = new Model_Ambiente();
+        $ambientes = $mdlAmbiente->fetchAll()->toArray();
+        if( count($ambientes) ) {
+            Core_Notificacao::adicionarMensagem("Para a importação completa, a tabela ambiente deve estar vazia");
+            $this->redirect("/ambiente");
+        }
+        
+        //Se conecta ao gestor antigo
+        $con = mysqli_connect(GESTOR_LOOK_DB_HOST, GESTOR_LOOK_DB_USER, GESTOR_LOOK_DB_PASS, GESTOR_LOOK_DB_NAME);
+        if( !$con ) {
+            echo mysqli_error($con);
+            die;
+        }
+        
+        //Mapea os canais
+        $canais = array(
+            4 => 14, //ACADEMIAS
+            5 => 13, //BARES
+            6 => 12, //SHOPPING
+            7 => 13, //RESTAURANTES
+            8 => 10, //ELEVADORES LOOK
+            10 => 9, //EDUCAÇÃO
+            11 => 8, //SAÚDE
+            12 => 7, //AGÊNCIAS DE PUBLICIDADE
+            13 => 6, //EMPRESAS
+            14 => 5, //SUPERMERCADO
+            15 => 4, //LED
+            16 => 3, //ELEVADORES ELEVAMEDIA
+            17 => 2, //METRÔ DF
+            18 => 1 //MÍDIA FIXA
+        );
+        
+        //Carrega os parceiros
+        $mdlEmpresa = new Model_Empresa();
+        $sql = " 
+                SELECT 
+                    *
+                FROM 
+                    location
+                WHERE
+                    statusLookupItemId = 1
+            ";
+        $query = mysqli_query($con, $sql);
+        $ambientes = array();
+        $idAutoIncrement = 1;
+        while( $ponto = mysqli_fetch_array($query) ) {
+            if( !$ponto['branch'] ) {
+                $ponto['branch'] = "Sem nome";
+            }
+
+            //Se não encontrar o parceiro, recupera o do contrato
+            $contract = null;
+            if( !$ponto['partnerId'] ) {
+                $sql = " 
+                    SELECT 
+                        *
+                    FROM 
+                        contract
+                    WHERE
+                        id = {$ponto['contractId']}
+                ";
+                $query = mysqli_query($con, $sql);
+                while( $contract = mysqli_fetch_array($query) ) {
+                    $ponto['partnerId'] = $contract['partnerId'];
+                    break;
+                }
+            }
+
+            //Carrega a empresa
+            $empresas = $mdlEmpresa->fetchAll("id_parceiro_look = " . $ponto['partnerId'])->toArray();
+            if( count($empresas) ) {
+                $ambiente = array(
+                    "id"            => $idAutoIncrement,
+                    "id_ponto_look" => $ponto['id'],
+                    "nome"          => $ponto['branch'],
+                    "telas"         => $ponto['totalDisplays'],
+                    "id_canal"      => $canais[$ponto['channelId']],
+                    "id_empresa"    => $empresas[0]['id']
+                );
+                $mdlAmbiente->insert($ambiente);
+                $idAutoIncrement++;
+            }
+        }
+        
+        $this->returnSuccess("Importação realizada com sucesso");
+        die;
+    }
 }

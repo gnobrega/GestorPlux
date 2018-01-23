@@ -9,6 +9,12 @@ DEFINE('MSG_CODIGO_ATIVACAO', 'Codigo de ativacao: %s');
 DEFINE('MSG_SEM_PERMISSAO', 'Você não tem permissão para editar esse registro');
 DEFINE('MSG_TPL_NAO_ENCONTRADO', 'Template não encontrado');
 
+//Dados de conexão ao banco de dados do Gestor antigo
+DEFINE('GESTOR_LOOK_DB_HOST', 'tresmidia-db.ccoqe3p4mmiy.sa-east-1.rds.amazonaws.com');
+DEFINE('GESTOR_LOOK_DB_USER', 'tresmidia');
+DEFINE('GESTOR_LOOK_DB_PASS', 'xsara-99');
+DEFINE('GESTOR_LOOK_DB_NAME', 'li_gestor');
+
 //Opção nula das combos
 DEFINE('SELECT_VALUE_NULL', '[*SELECT_NULL*]');
 
@@ -36,7 +42,23 @@ class Constants {
     static $BOOKING_LAYOUT = array(
         1 => "Padrão"
     );
-        
+    static $LOOK_CANAIS = array(
+        4 => 14, //ACADEMIAS
+        5 => 13, //BARES
+        6 => 12, //SHOPPING
+        7 => 13, //RESTAURANTES
+        8 => 10, //ELEVADORES LOOK
+        10 => 9, //EDUCAÇÃO
+        11 => 8, //SAÚDE
+        12 => 7, //AGÊNCIAS DE PUBLICIDADE
+        13 => 6, //EMPRESAS
+        14 => 5, //SUPERMERCADO
+        15 => 4, //LED
+        16 => 3, //ELEVADORES ELEVAMEDIA
+        17 => 2, //METRÔ DF
+        18 => 1 //MÍDIA FIXA
+    );
+
     /**
      * Recupera um valor específico
      */

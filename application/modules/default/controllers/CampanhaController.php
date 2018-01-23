@@ -42,7 +42,18 @@ class CampanhaController extends AbstractController {
         $this->addBreadcrumb("Cadastro");
         
         //Monta o formulário
-        $this->montarForm();
+        $importacao = null;
+        if( isset($_GET['importacao']) ) {
+            $importacao = array(
+                "nome"      => $_GET['importacao']['nome'],
+                "inicio"    => Core_Global::dataBr($_GET['importacao']['inicio']),
+                "fim"       => Core_Global::dataBr($_GET['importacao']['fim']),
+                "pi"        => $_GET['importacao']['pi']
+            );
+        }
+        
+        //Monta o formulário
+        $this->montarForm(array(), $importacao);
         
         //Renderiza a view
         $this->renderScript($this->_entity.'/form.phtml');
@@ -51,7 +62,7 @@ class CampanhaController extends AbstractController {
     /**
      * Monta o formulário
      */
-    public function montarForm($registro = array()) {
+    public function montarForm($registro = array(), $importacao = null) {
         $this->view->form = new Core_Form("/".$this->_entity."/salvar");
         $this->view->form->setData($registro);
         
@@ -62,7 +73,7 @@ class CampanhaController extends AbstractController {
         }
         
         //Nome
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoNome = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_nome")
                 ->setLabel("Nome")
                 ->setRequired(true)
@@ -83,7 +94,7 @@ class CampanhaController extends AbstractController {
                 ->setLabel("Agência");
         
         //PI
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoPi = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_pi")
                 ->setLabel("PI");
         
@@ -117,16 +128,24 @@ class CampanhaController extends AbstractController {
                 ->setEmpty(true);
         
         //Início
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoInicio = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_inicio")
                 ->setLabel("Início")
                 ->addClass("date");
         
         //Fim
-        $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
+        $campoFim = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_fim")
                 ->setLabel("Fim")
                 ->addClass("date");
+        
+        //Preenche os campos com os dados vindo de importação
+        if( $importacao ) {
+            $campoNome->setValue($importacao['nome']);
+            $campoInicio->setValue($importacao['inicio']);
+            $campoFim->setValue($importacao['fim']);
+            $campoPi->setValue($importacao['pi']);
+        }
     }
     
     /**
@@ -262,6 +281,159 @@ class CampanhaController extends AbstractController {
         }
         Core_Global::encodeListUtf($ambientes, true);
         $this->returnSuccess(null, $ambientes);
+        die;
+    }
+    
+    /**
+     * Importa os registros do sistema antigo
+     */
+    public function importarAction() {
+        
+        //Breadcrumb
+        $this->addBreadcrumb("Importação");
+        
+        //Se conecta ao gestor antigo
+        $con = mysqli_connect(GESTOR_LOOK_DB_HOST, GESTOR_LOOK_DB_USER, GESTOR_LOOK_DB_PASS, GESTOR_LOOK_DB_NAME);
+        if( !$con ) {
+            echo mysqli_error($con);
+            die;
+        }
+        
+        //Carrega os parceiros
+        $sql = " 
+                SELECT 
+                    campanha.id,
+                    campanha.campanha, 
+                    campanha.inicio,
+                    campanha.fim,
+                    campanha.numeropi
+                FROM 
+                    campanha
+                ORDER BY
+                    campanha.id DESC
+            ";
+        $query = mysqli_query($con, $sql);
+        $campanhas = array();
+        
+        //Carrega as empresas do novo gestor
+        $mdlCampanha = new Model_Campanha();
+        $campanhasLook = $mdlCampanha->fetchAll()->toArray();
+        while( $campanha = mysqli_fetch_array($query) ) {
+            $campanhas[] = array(
+                "id"        => $campanha['id'],
+                "campanha"  => utf8_encode($campanha['campanha']),
+                "inicio"    => Core_Global::dataBr($campanha['inicio']),
+                "fim"       => Core_Global::dataBr($campanha['fim']),
+                "pi"        => $campanha['numeropi']
+            );
+        }
+        $this->view->campanhas = $campanhas;
+    }
+    
+    /**
+     * Importa todas as campanhas do Gestor Look
+     */
+    public function importarTodosAction() {
+
+        //Models
+        $mdlCampanha = new Model_Campanha();
+        $mdlCampanhaAmbiente = new Model_Generic("campanha_ambiente");
+        $mdlCampanhaCanal = new Model_Generic("campanha_canal");
+        
+        //Verifica se a tabela está limpa
+        $campanhas = $mdlCampanha->fetchAll()->toArray();
+        if( count($campanhas) ) {
+            Core_Notificacao::adicionarMensagem("Para a importação completa, a tabela campanha deve estar vazia");
+            $this->redirect("/campanha");
+        }
+        
+        //Se conecta ao gestor antigo
+        $con = mysqli_connect(GESTOR_LOOK_DB_HOST, GESTOR_LOOK_DB_USER, GESTOR_LOOK_DB_PASS, GESTOR_LOOK_DB_NAME);
+        if( !$con ) {
+            echo mysqli_error($con);
+            die;
+        }
+        
+        //Carrega os parceiros
+        $sql = " 
+                SELECT 
+                    *
+                FROM 
+                    campanha
+                WHERE
+                    inicio >= '2017-01-01'
+                ORDER BY
+                    id DESC
+            ";
+        $query = mysqli_query($con, $sql);
+        $relCampanhaAmbiente = array();
+        
+        $idAutoIncrement = 1;
+        $mdlAmbiente = new Model_Ambiente();
+        while( $campanha = mysqli_fetch_array($query) ) {
+            
+            //Carrega a relação com os pontos
+            $sql = " 
+                SELECT 
+                    *
+                FROM 
+                    campanha_location
+                WHERE
+                    campanhaId = {$campanha['id']}
+            ";
+            $query2 = mysqli_query($con, $sql);
+            $canaisLook = array();
+            while( $rel = mysqli_fetch_array($query2) ) {
+                
+                //Recupera o novo id do ambiente
+                $ambientes = $mdlAmbiente->fetchAll("id_ponto_look = " . $rel['locationId'])->toArray();
+                if( count($ambientes) ) {
+                    $canalId = $ambientes[0]['id_canal'];
+                    $canaisLook[$canalId] = $canalId;
+                    $relCampanhaAmbiente[] = array(
+                        "id_ambiente" => $ambientes[0]['id'],
+                        "id_campanha" => $idAutoIncrement
+                    );
+                }
+            }
+            
+            //Cria as relações com os canais
+            $relCampanhaCanal = array();
+            foreach( $canaisLook as $canalLook ) {
+                if( isset(Constants::$LOOK_CANAIS[$canalLook]) ) {
+                    $relCampanhaCanal[] = array(
+                        "id_campanha" => $idAutoIncrement,
+                        "id_canal" => Constants::$LOOK_CANAIS[$canalLook]
+                    );
+                }
+            }
+            
+            //Monta o array da campanha            
+            $campanhaTmp = array(
+                "id" => $idAutoIncrement,
+                "nome" => $campanha['campanha'],
+                "inicio" => $campanha['inicio'],
+                "fim" => $campanha['fim'],
+                "pi" => $campanha['numeropi']
+            );
+            
+            //Insere a campanha
+            $mdlCampanha->insert($campanhaTmp);
+            
+            //Insere os relacionamentos com os ambientes
+            foreach( $relCampanhaAmbiente as $campAmbiente ) {
+                $mdlCampanhaAmbiente->insert($campAmbiente);
+            }
+            
+            //Insere os relacionamentos com os canais
+            foreach( $relCampanhaCanal as $campCanal ) {
+                $mdlCampanhaCanal->insert($campCanal);
+            }
+            
+            $idAutoIncrement++;
+        }
+        
+        $this->returnSuccess("Importação realizada com sucesso");
         die;
     }
 }

@@ -7,6 +7,8 @@
             <div class="ibox-title">
                 <!-- Botão voltar -->
                 <button type="button" class="btn btn-default btn-voltar"><i class="fa fa-mail-reply"></i> Voltar</button>
+                <!-- Botão importar -->
+                <button type="button" class="btn btn-default" id="btn-importar"><i class="fa fa-download"></i> Importar</button>
                 &nbsp;
                 <!-- Botão novo -->
                 <button type="button" class="btn btn-primary grid-act-new"> Novo</button>
@@ -19,3 +21,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(function() {
+        
+        //Redireciona para a tela de importação
+        $("button#btn-importar").on("click", function(e) {
+            e.preventDefault();
+            window.location = "/empresa/importar";
+        });
+    });
+</script>
