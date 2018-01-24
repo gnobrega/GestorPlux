@@ -22,7 +22,7 @@ class Model_S3BookingIndices extends Model_Abstract {
         } else {
             $where .= " AND ambiente.id_canal IN (" . implode(",", $canais) . ")";
         }
-        
+         
         //Calcula o total de itens
         $sql = $adapter
                 ->select()
