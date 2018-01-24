@@ -26,8 +26,9 @@ class Model_S3BookingIndices extends Model_Abstract {
         //Calcula o total de itens
         $sql = $adapter
                 ->select()
-                ->from($this->_name, 'COUNT(*) total')
-                ->join("ambiente", "ambiente.id = {$this->_name}.id_ambiente")
+                ->from($this->_name, null)
+                ->columns(array("COUNT(*) total"))
+                ->join("ambiente", "ambiente.id = {$this->_name}.id_ambiente", null)
                 ->where($where);
         $rs = $adapter->fetchAll($sql);
         $total = $rs[0]['total'];
