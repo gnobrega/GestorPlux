@@ -174,7 +174,7 @@ class UsuarioController extends AbstractController {
         $mdlUsuario = new Model_Usuario();
         $usuarios = $mdlUsuario->fetchAll()->toArray();
         Core_Global::encodeListUtf($usuarios, true);
-        echo json_encode($usuarios);
+        $this->returnSuccess("", $usuarios);
         die;
     }
 }
