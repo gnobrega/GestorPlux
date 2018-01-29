@@ -144,6 +144,9 @@ class UsuarioController extends AbstractController {
         $this->renderScript('usuario/form.phtml');
     }
     
+    /**
+     * Salva o usuário no banco
+     */
     public function salvarAction($return = false) {
         if( $_POST['_senha'] ) {
             $_POST['_senha'] = sha1(md5($_POST['_senha']));
@@ -152,5 +155,26 @@ class UsuarioController extends AbstractController {
         }
         $rs = parent::salvarAction(true);
         $this->redirect("/usuario");
+    }
+    
+    /**
+     * Lista os usuários em formato de Json
+     */
+    public function listarJsonAction() {
+        
+        //Chave de verificação
+        $chave = "gestor-plux-" . date("m-d");
+        $chaveCript = sha1($chave);
+        if( $this->getParam("chave") != $chaveCript ) {
+            $this->returnError("Chave de validação inválida");
+            die;
+        }
+        
+        //Carrega os usuários
+        $mdlUsuario = new Model_Usuario();
+        $usuarios = $mdlUsuario->fetchAll()->toArray();
+        Core_Global::encodeListUtf($usuarios, true);
+        echo json_encode($usuarios);
+        die;
     }
 }

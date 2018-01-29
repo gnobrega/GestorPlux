@@ -42,7 +42,7 @@ class Model_S3BookingIndices extends Model_Abstract {
                 ->order(array("data_foto DESC", "tela ASC", $this->_name . ".id DESC"));
         
         //Carrega o resultado
-        //echo "<pre>{$sql}</pre>";die;
+        echo "<pre>{$sql}</pre>";die;
         $indices = $adapter->fetchAll($sql);
         return array(
             'total' => $total,
