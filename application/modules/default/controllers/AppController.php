@@ -43,14 +43,15 @@ class AppController extends AbstractController {
         $mdlEmpresa = new Model_Empresa();
         $mdlEndereco = new Model_Endereco();
         $ambientes = $mdlAmbiente->fetchAll(null, 'nome')->toArray();
+        
         foreach( $ambientes as $ambiente ) {
             $enderecos = $mdlEndereco->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
             $empresas = $mdlEmpresa->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
             if( count($enderecos) && count($empresas) ) {
                 $endereco = $enderecos[0];
                 $empresa = $empresas[0];
-                $endereco['google_ref'] = utf8_encode($endereco['google_ref']);
-                $endereco['complemento'] = utf8_encode($endereco['complemento']);
+                $endereco['google_ref'] = $endereco['google_ref'];
+                $endereco['complemento'] = $endereco['complemento'];
                 if( $ambiente['nome'] == 'Sem nome' ) {
                     $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $endereco['complemento'];
                 } else {
