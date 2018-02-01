@@ -40,15 +40,22 @@ class AppController extends AbstractController {
         
         //Carrega todos os ambientes
         $mdlAmbiente = new Model_Ambiente();
+        $mdlEmpresa = new Model_Empresa();
         $mdlEndereco = new Model_Endereco();
         $ambientes = $mdlAmbiente->fetchAll(null, 'nome')->toArray();
-        Core_Global::encodeListUtf($ambientes, true);
         foreach( $ambientes as $ambiente ) {
             $enderecos = $mdlEndereco->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
-            if( count($enderecos) ) {
+            $empresas = $mdlEmpresa->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
+            if( count($enderecos) && count($empresas) ) {
                 $endereco = $enderecos[0];
+                $empresa = $empresas[0];
                 $endereco['google_ref'] = utf8_encode($endereco['google_ref']);
                 $endereco['complemento'] = utf8_encode($endereco['complemento']);
+                if( $ambiente['nome'] == 'Sem nome' ) {
+                    $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $endereco['complemento'];
+                } else {
+                    $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $ambiente['nome'];
+                }
                 $rs['locations'][] = array(
                     "id" => $ambiente['id'],
                     "name" => $ambiente['nome'],
@@ -59,6 +66,7 @@ class AppController extends AbstractController {
                 );
             }
         }
+        Core_Global::encodeListUtf($rs['locations'], true);
         
         //Carrega as campanhas
         $mdlCampanha = new Model_Campanha();
