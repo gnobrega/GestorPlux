@@ -221,4 +221,55 @@ class AmbienteController extends AbstractController {
         $this->returnSuccess("Importação realizada com sucesso");
         die;
     }
+    
+    /**
+     * Importa o endereço da base da Look
+     */
+    public function importarEnderecosAction() {
+        
+        //Se conecta ao gestor antigo
+        $con = mysqli_connect(GESTOR_LOOK_DB_HOST, GESTOR_LOOK_DB_USER, GESTOR_LOOK_DB_PASS, GESTOR_LOOK_DB_NAME);
+        if( !$con ) {
+            echo mysqli_error($con);
+            die;
+        }
+        
+        //Models
+        $mdlAmbiente = new Model_Ambiente();
+        $mdlEndereco = new Model_Endereco();
+        
+        //Carrega os pontos
+        $sql = " 
+            SELECT 
+                *
+            FROM 
+                location
+            WHERE
+                statusLookupItemId = 1
+        ";
+        $query = mysqli_query($con, $sql);
+        while( $ponto = mysqli_fetch_array($query) ) {
+            $ambientes = $mdlAmbiente->fetchAll("id_ponto_look = " . $ponto['id'])->toArray();
+            if( count($ambientes) ) {
+                $ambiente = $ambientes[0];
+                if( !$ambiente['id_endereco'] ) {
+                    
+                    //Cadastra o endereço
+                    $endereco = array(
+                        "latitude" => $ponto['latitude'],
+                        "longitude" => $ponto['longitude'],
+                        "google_ref" => $ponto['address'],
+                        "complemento" => $ponto['complement']
+                    );
+                    
+                    //Insere o endereço
+                    $enderecoId = $mdlEndereco->insert($endereco);
+                    $ambiente['id_endereco'] = $enderecoId;
+                    $mdlAmbiente->update($ambiente, "id = " . $ambiente['id']);
+                }
+            }
+        }
+        $this->returnSuccess("Importação realizada com sucesso");
+        die;
+    }
 }
