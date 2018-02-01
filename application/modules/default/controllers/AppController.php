@@ -60,6 +60,17 @@ class AppController extends AbstractController {
             }
         }
         
+        //Carrega as campanhas
+        $mdlCampanha = new Model_Campanha();
+        $campanhas = $mdlCampanha->fetchAll(null, 'nome')->toArray();
+        Core_Global::encodeListUtf($campanhas, true);
+        foreach( $campanhas as $campanha ) {
+            $rs['campaigns'][] = array(
+                "id" => $campanha['id'],
+                "name" => $campanha['nome']
+            );
+        }
+        
         $this->returnSuccess("", $rs);
         die;
     }
