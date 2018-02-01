@@ -156,25 +156,4 @@ class UsuarioController extends AbstractController {
         $rs = parent::salvarAction(true);
         $this->redirect("/usuario");
     }
-    
-    /**
-     * Lista os usuários em formato de Json
-     */
-    public function listarJsonAction() {
-        
-        //Chave de verificação
-        $chave = "gestor-plux-" . date("m-d");
-        $chaveCript = sha1($chave);
-        if( $this->getParam("chave") != $chaveCript ) {
-            $this->returnError("Chave de validação inválida");
-            die;
-        }
-        
-        //Carrega os usuários
-        $mdlUsuario = new Model_Usuario();
-        $usuarios = $mdlUsuario->fetchAll()->toArray();
-        Core_Global::encodeListUtf($usuarios, true);
-        $this->returnSuccess("", $usuarios);
-        die;
-    }
 }
