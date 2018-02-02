@@ -58,12 +58,13 @@ class AppController extends AbstractController {
                     $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $ambiente['nome'];
                 }
                 $rs['locations'][] = array(
-                    "id" => $ambiente['id'],
-                    "name" => $ambiente['nome'],
-                    "id_route" => 0,
-                    "id_channel" => $ambiente['id_canal'],
-                    "latitude" => $endereco['latitude'],
-                    "longitude" => $endereco['longitude']
+                    "id"                => $ambiente['id'],
+                    "name"              => $ambiente['nome'],
+                    "id_ponto_look"     => $ambiente['id_ponto_look'],
+                    "id_route"          => 0,
+                    "id_channel"        => $ambiente['id_canal'],
+                    "latitude"          => $endereco['latitude'],
+                    "longitude"         => $endereco['longitude']
                 );
             }
         }
@@ -78,6 +79,42 @@ class AppController extends AbstractController {
                 "id" => $campanha['id'],
                 "name" => $campanha['nome']
             );
+        }
+        
+        //Carrega as estações cadastradas no sistema da Look
+        $rs['stations'] = array();
+        $con = mysqli_connect(GESTOR_LOOK_DB_HOST, GESTOR_LOOK_DB_USER, GESTOR_LOOK_DB_PASS, GESTOR_LOOK_DB_NAME);
+        if( $con ) {
+            
+            //Carrega os pontos
+            $sql = " 
+                SELECT 
+                    *
+                FROM 
+                    location_station
+            ";
+            $query = mysqli_query($con, $sql);
+            $stations = array();
+            if( $query ) {
+                while( $station = mysqli_fetch_array($query) ) {
+                    if( $station['dsId'] ) {
+                        $stations[$station['locationId']][] = array(
+                            'dsId' => $station['dsId']
+                        );
+                    }
+                }
+                
+                //Atribui os dados do ambiente
+                foreach( $rs['locations'] as $ambiente ) {
+                    $codLook = $ambiente['id_ponto_look'];
+                    if( isset($stations[$codLook]) ) {
+                        foreach( $stations[$codLook] as $s => $station ) {
+                            $stations[$codLook][$s]['text'] = $ambiente['name'];
+                            $rs['stations'][] = $stations[$codLook][$s];
+                        }
+                    }
+                }
+            }
         }
         
         $this->returnSuccess("", $rs);
