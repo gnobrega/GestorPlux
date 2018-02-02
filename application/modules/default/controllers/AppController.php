@@ -99,6 +99,7 @@ class AppController extends AbstractController {
                 while( $station = mysqli_fetch_array($query) ) {
                     if( $station['dsId'] ) {
                         $stations[$station['locationId']][] = array(
+                            'id' => $station['id'],
                             'dsId' => $station['dsId']
                         );
                     }
