@@ -111,6 +111,7 @@ class AppController extends AbstractController {
                     if( isset($stations[$codLook]) ) {
                         foreach( $stations[$codLook] as $s => $station ) {
                             $stations[$codLook][$s]['text'] = $ambiente['name'];
+                            $stations[$codLook][$s]['locationId'] = $ambiente['id'];
                             $rs['stations'][] = $stations[$codLook][$s];
                         }
                     }
