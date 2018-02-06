@@ -225,7 +225,7 @@ class BookingController extends AbstractController {
         while( true ) {
             $result = $s3Client->ListObjects([
                 'Bucket' => AWS_S3_CHECKIN_BUCKET,
-                'Prefix' => "photos/",
+                'Prefix' => "photos-plux/",
                 'Marker' => $ultimoRegistro,
                 'MaxKeys' => 100
             ]);
