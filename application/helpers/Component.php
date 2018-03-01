@@ -26,6 +26,7 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
      */
     public function combo($entity, $attrs = array()) {
         $module = 'default';
+        $this->view->comboConfig = array();
         
         if( $entity ) {
             //Carrega a lista de registros
@@ -38,7 +39,6 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
             }
 
             $this->_model = new $nmModel;
-            $this->view->comboConfig = array();
             $where = ( isset($attrs['where']) ) ? $attrs['where'] : null;
             
             //Configuração padrão da combo
@@ -48,6 +48,9 @@ class Zend_View_Helper_Component extends Zend_View_Helper_Abstract {
             $this->view->comboConfig['pk'] = $this->_model->getPrimary();
         } else {
             $this->view->comboConfig['data'] = array();
+            $this->view->comboConfig['label'] = "";
+            $this->view->comboConfig['pk'] = null;
+            $this->view->comboConfig['name'] = "";
         }
 
         $this->view->comboConfig['class'] = 'form-control chosen-select';

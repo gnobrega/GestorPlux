@@ -12,15 +12,16 @@ var Form = {
         $('input.cep').mask("99999-999");
         $('input.time').mask("99:99");
         $('input.cnpj').mask("999.999.999/9999-99");
+        $('input.datepicker').mask("99/99/9999");
         $('.chosen-select').chosen();
-        $('.input-group.date').datepicker({
+        $('.input-group.datepicker').datepicker({
             todayBtn: "linked",
             autoclose: true,
             language: "pt-BR",
             format: 'dd/mm/yyyy'
         });
         //Carrega a Treeview
-        $('input.date').datepicker({
+        $('input.datepicker').datepicker({
             todayBtn: "linked",
             autoclose: true,
             language: "pt-BR",

@@ -45,8 +45,12 @@ class Core_Global {
      * @return string
      */
     public static function dataIso($data) {
-        $data = new Zend_Date($data);
-        return $data->toString(Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY);
+        $dataRs = '';
+        if( $data ) {
+            $data = new Zend_Date($data);
+            $dataRs = $data->toString(Zend_Date::YEAR . '-' . Zend_Date::MONTH . '-' . Zend_Date::DAY);
+        }
+        return $dataRs;
     }
 
     /**
@@ -55,8 +59,12 @@ class Core_Global {
      * @return string
      */
     public static function dataBr($data) {
-        $data = new Zend_Date($data);
-        return $data->toString(Zend_Date::DAY . '/' . Zend_Date::MONTH . '/' . Zend_Date::YEAR);
+        $dataRs = '';
+        if( $data && $data != '0000-00-00' ) {
+            $data = new Zend_Date($data);
+            $dataRs = $data->toString(Zend_Date::DAY . '/' . Zend_Date::MONTH . '/' . Zend_Date::YEAR);
+        }
+        return $dataRs;
     }
 
     /**

@@ -131,13 +131,13 @@ class CampanhaController extends AbstractController {
         $campoInicio = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_inicio")
                 ->setLabel("Início")
-                ->addClass("date");
+                ->addClass("datepicker");
         
         //Fim
         $campoFim = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_fim")
                 ->setLabel("Fim")
-                ->addClass("date");
+                ->addClass("datepicker");
         
         //Preenche os campos com os dados vindo de importação
         if( $importacao ) {
