@@ -113,9 +113,6 @@ class AmbienteController extends AbstractController {
      */
     public function salvarAction($return = false) {
         $rs = parent::salvarAction(true);
-        if( isset($resp["msgErro"]) ) {
-            Core_Notificacao::adicionarMensagem($resp["msgErro"], "error");
-        }
         $this->redirect("/".$this->_entity);
     }
     
@@ -127,6 +124,25 @@ class AmbienteController extends AbstractController {
         $where = ( isset($_GET['filter']) ) ? $_GET['filter'] : null;
         $lst = $ambienteModel->fetchAll($where)->toArray();
         Core_Global::encodeListUtf($lst, true);
+        
+        //Carrega a lista das empresa
+        $mdlEmpresa = new Model_Empresa();
+        $empresas = $mdlEmpresa->fetchAll()->toArray();
+        Core_Global::encodeListUtf($empresas, true);
+        Core_Global::attrToKey($empresas, 'id');
+        
+        //Gera o nome
+        foreach( $lst as $i => $ambiente ) {
+            $empresaId = $ambiente['id_empresa'];
+            if( isset($empresas[$empresaId]) ) {
+                if( $ambiente['nome'] == 'Sem nome' ) {
+                    $lst[$i]['nome'] = $empresas[$empresaId]['nome_comercial'];
+                } else {
+                    $lst[$i]['nome'] = $empresas[$empresaId]['nome_comercial'] . ' - ' . $lst[$i]['nome'];
+                }
+            }
+        }
+        
         echo json_encode($lst);
         die;
     }
