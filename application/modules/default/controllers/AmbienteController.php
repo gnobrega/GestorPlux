@@ -113,6 +113,9 @@ class AmbienteController extends AbstractController {
      */
     public function salvarAction($return = false) {
         $rs = parent::salvarAction(true);
+        if( isset($resp["msgErro"]) ) {
+            Core_Notificacao::adicionarMensagem($resp["msgErro"], "error");
+        }
         $this->redirect("/".$this->_entity);
     }
     
