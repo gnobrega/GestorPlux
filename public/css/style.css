@@ -4944,6 +4944,7 @@ ul.notes li div {
   padding: 10px;
   background-color: #f8f8f8;
   border-top: 1px solid #e7eaec;
+  height: 64px;
 }
 .file-name small {
   color: #676a6c;

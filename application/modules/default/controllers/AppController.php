@@ -46,7 +46,7 @@ class AppController extends AbstractController {
         
         foreach( $ambientes as $ambiente ) {
             $enderecos = $mdlEndereco->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
-            $empresas = $mdlEmpresa->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
+            $empresas = $mdlEmpresa->fetchAll("id = " . $ambiente['id_empresa'])->toArray();
             if( count($enderecos) && count($empresas) ) {
                 $endereco = $enderecos[0];
                 $empresa = $empresas[0];

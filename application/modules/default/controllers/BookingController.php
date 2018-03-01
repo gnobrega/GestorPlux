@@ -101,6 +101,18 @@ class BookingController extends AbstractController {
         Core_Global::attrToKey($ambientes, "id");
         Core_Global::encodeListUtf($ambientes, true);
         
+        //Carrega a lista de empresas
+        $mdlEmpresa = new Model_Empresa();
+        $empresas = $mdlEmpresa->fetchAll()->toArray();
+        Core_Global::attrToKey($empresas, "id");
+        Core_Global::encodeListUtf($empresas, true);
+        
+        //Carrega a lista de endereços
+        $mdlEndereco = new Model_Endereco();
+        $enderecos = $mdlEndereco->fetchAll()->toArray();
+        Core_Global::attrToKey($enderecos, "id");
+        Core_Global::encodeListUtf($enderecos, true);
+        
         //Carrega a lista de canais
         $mdlCanal = new Model_Canal();
         $canais = $mdlCanal->fetchAll(null, 'nome')->toArray();
@@ -130,7 +142,22 @@ class BookingController extends AbstractController {
         $rs = $mdlIndices->pesquisar($canaisIds, $dataInicio, $dataFim, 56, $pagina, $ambienteId);
         foreach( $rs['indices'] as $i => $indice ) {
             $ambienteId = $indice['id_ambiente'];
-            $ambiente = "Ambiente não encontrado";
+            $ambiente = "Sem nome";
+            if( isset($ambientes[$ambienteId]) ) {
+                $ambiente = $ambientes[$ambienteId]['nome'];
+                if( $ambientes[$ambienteId]['nome'] == 'Sem nome' ) {
+                    $empresaId = $ambientes[$ambienteId]['id_empresa'];
+                    if( isset($empresas[$empresaId]) ) {
+                        $ambiente = $empresas[$empresaId]['nome_comercial'];
+                        $enderedoId =  $ambientes[$ambienteId]['id_endereco'];
+                        if( isset($enderecos[$enderedoId]) ) {
+                            $ambiente .= " - " . $enderecos[$enderedoId]['complemento'];
+                        }
+                    }
+                }
+                
+                
+            }
             $rs['indices'][$i]['ambiente'] = $ambiente;
             $rs['indices'][$i]['data_foto'] = Core_Global::dataBr($rs['indices'][$i]['data_foto']);
         }
@@ -419,10 +446,16 @@ class BookingController extends AbstractController {
         
         //Carrega os detalhes do cliente
         $mdlEmpresa = new Model_Empresa();
-        $this->view->cliente = $mdlEmpresa->find($this->view->campanha['id_empresa_cliente'])->current()->toArray();
+
+        //Cliente
+        if( $this->view->campanha['id_empresa_cliente'] ) {
+            $this->view->cliente = $mdlEmpresa->find($this->view->campanha['id_empresa_cliente'])->current()->toArray();
+        }
         
         //Agência
-        $this->view->agencia = $mdlEmpresa->find($this->view->campanha['id_empresa_agencia'])->current()->toArray();
+        if( $this->view->campanha['id_empresa_agencia'] ) {
+            $this->view->agencia = $mdlEmpresa->find($this->view->campanha['id_empresa_agencia'])->current()->toArray();
+        }
         
         //Carrega os canais
         $mdlCanal = new Model_Canal();
@@ -445,7 +478,7 @@ class BookingController extends AbstractController {
         $arquivos = scandir($path);
         foreach( $arquivos as $arquivo ) {
             if( $arquivo != '.' && $arquivo != '..' ) {
-//                unlink($path . $arquivo);
+                unlink($path . $arquivo);
             }
         }
         
@@ -453,10 +486,10 @@ class BookingController extends AbstractController {
         foreach( $indices as $i => $indice ) {
             $idx = strrpos($indice['url'], "/") + 1;
             $nomeArquivo = substr($indice['url'], $idx);
-//            $conteudo  = file_get_contents($indice['url']);
-//            $handle = fopen($path . $nomeArquivo, 'w');
-//            fwrite($handle, $conteudo);
-//            fclose($handle);
+            $conteudo  = file_get_contents($indice['url']);
+            $handle = fopen($path . $nomeArquivo, 'w');
+            fwrite($handle, $conteudo);
+            fclose($handle);
             
             $indices[$i]['fotoLocal'] = $path . $nomeArquivo;
         }

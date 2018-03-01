@@ -309,6 +309,11 @@
                     if( listaFotos.indexOf(key) > -1 ) {
                         selected = "selected";
                     }
+                    var nmAmbiente = imagens[i].ambiente;
+                    if( nmAmbiente.length > 45 ) {
+                        nmAmbiente = imagens[i].ambiente.substr(0, 45) + "...";
+                    }
+                    
                     html += "\n\
                         <div class='file-box'>\n\
                             <div class='file "+selected+"' key='"+imagens[i].key+"'>\n\
@@ -319,7 +324,7 @@
                                         <img alt='image' class='img-responsive' src='"+imagens[i].url+"'>\n\
                                     </div>\n\
                                     <div class='file-name'>\n\
-                                        " + imagens[i].ambiente + "\n\
+                                        " + nmAmbiente + "\n\
                                         <br/>\n\
                                         <small><strong>Tela: " + imagens[i].tela + "</strong> - " + imagens[i].data_foto + "</small>\n\
                                     </div>\n\

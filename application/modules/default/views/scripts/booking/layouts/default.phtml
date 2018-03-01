@@ -47,8 +47,10 @@
     $arquivo = './tmp/BOOKING.pptx';
     $objWriter->save($arquivo);
     $contentFile = file_get_contents($arquivo);
-    echo 'ok2';
     
+    //Força o download
+    download($arquivo);
+        
     
     /*************************************/
     /************** Funções **************/
@@ -175,46 +177,6 @@
         $yStart = 200;
         $yInterv = 25;
         $yLimit = 900;
-//        $slides = array();
-//        foreach( $canais as $ic => $canal ) {
-//            $canalId = $canal['id'];
-//            
-//            //Verifica se possui ambientes naquele canal
-//            if( isset($ambientes[$canalId]) ) {
-//                $slide = array();
-//                
-//                //Se chegar ao final do slide cria um novo
-//                if( $yStart >= $yLimit ) {
-//                    
-//                }
-//                
-//                //Adiciona o canal ao array
-//                $slide[] = array(
-//                    "tipo" => "canal",
-//                    "nome" => $canal['nome']
-//                );
-//                
-//                //Divide os ambientes em duas colunas
-//                $ambientesCanal = $ambientes[$canalId];
-//                $totalAmbientes = count($ambientesCanal);
-//                $totalPorColuna = ceil( $totalAmbientes / 2 );
-//                $ambientesCol1 = array_slice($ambientesCanal, 0 ,$totalPorColuna);
-//                $ambientesCol2 = array_slice($ambientesCanal, $totalPorColuna);
-//                $slide[] = array(
-//                    'tipo' => 'ambientes',
-//                    'col1' => $ambientesCol1,
-//                    'col2' => $ambientesCol2
-//                );
-//                
-//                //Adiciona o slide à lista
-//                $slides[] = $slide;
-//            }
-//        }
-//        echo "<pre>";
-//        print_r($slides);
-//        die;
-//        die;
-        
    
         //CANAIS
         foreach( $canais as $ic => $canal ) {
@@ -809,4 +771,18 @@
         $fotoImg->setOffsetY($y + 50);
                 
         $countImg++;
+    }
+    
+    function download($file) {
+        // Configuramos os headers que serão enviados para o browser
+        header('Content-Description: File Transfer');
+        header('Content-Disposition: attachment; filename="BOOKING.pptx"');
+        header('Content-Type: application/octet-stream');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Length: ' . filesize($file));
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Expires: 0');
+        // Envia o arquivo para o cliente
+        readfile($file);
     }
