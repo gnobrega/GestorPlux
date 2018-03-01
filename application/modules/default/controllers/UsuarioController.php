@@ -110,10 +110,12 @@ class UsuarioController extends AbstractController {
                 ->setRequired(true);
         
         //Perfil
-        $fieldLogin = $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
-                ->setName("perfil")
-                ->setLabel("Perfil")
-                ->setRequired(true);
+        $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
+                ->setTable("perfil")
+                ->setName("_id_perfil")
+                ->setRequired(true)
+                ->setLabel("Perfil");
+        
         
         //Senha
         $fieldSenha = $this->view->form->addField(Core_Form_Field::$TYPE_PASSWORD)
