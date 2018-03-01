@@ -140,6 +140,7 @@ class BookingController extends AbstractController {
         
         //Carrega as imagens a partir dos índices
         $rs = $mdlIndices->pesquisar($canaisIds, $dataInicio, $dataFim, 56, $pagina, $ambienteId);
+        Core_Global::encodeListUtf($rs['indices'], 1);
         foreach( $rs['indices'] as $i => $indice ) {
             $ambienteId = $indice['id_ambiente'];
             $ambiente = "Sem nome";
