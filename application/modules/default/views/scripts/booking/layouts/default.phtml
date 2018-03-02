@@ -103,14 +103,13 @@
         }
         
         //TABELA DE DADOS
-        
         $table = $currentSlide->createTableShape(2);
         $table->setWidth(700);
         $table->setOffsetX(120);
         $table->setOffsetY($tableY);
         $data = array(
-            "CLIENTE" => strtoupper(utf8_encode($cliente['nome_comercial'])),
-            "CAMPANHA" => strtoupper(utf8_encode($campanha['nome'])),
+            "CLIENTE" => utf8_encode(strtoupper($cliente['nome_comercial'])),
+            "CAMPANHA" => utf8_encode(strtoupper($campanha['nome'])),
             "PRODUTO" => utf8_encode($campanha['produto']),
             "PERIODO" => Core_Global::dataBr($campanha['inicio']) . " A " . Core_Global::dataBr($campanha['fim']),
             "PI" => $campanha['pi'],
