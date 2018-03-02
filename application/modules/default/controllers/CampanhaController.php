@@ -27,7 +27,7 @@ class CampanhaController extends AbstractController {
 
         //Gera a tabela
         $this->view->grid = new Core_Grid($this->_entity);
-        $this->view->grid->addColumn("Id", "id");
+        $this->view->grid->addColumn("Id", "id", array("order"=>"desc"));
         $this->view->grid->addColumn("Nome", "nome");
         $this->view->grid->addColumn("Cliente", "fk_empresa_cliente", null, "empresa");
         $this->view->grid->addColumn("PI", "pi");
