@@ -47,7 +47,7 @@
     $arquivo = './tmp/BOOKING.pptx';
     $objWriter->save($arquivo);
     $contentFile = file_get_contents($arquivo);
-DIE;    
+
     //Força o download
     download($arquivo);
         
