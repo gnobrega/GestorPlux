@@ -495,4 +495,25 @@ class BookingController extends AbstractController {
             $indices[$i]['fotoLocal'] = $path . $nomeArquivo;
         }
     }
+    
+    public function testeAction() {
+        
+        $pathClass = realpath(APPLICATION_PATH . "/../library/PHPPowerPoint/Classes");
+        set_include_path(get_include_path() . PATH_SEPARATOR . $pathClass);
+        require 'PHPPowerPoint.php';
+        require 'PHPPowerPoint/IOFactory.php';
+        
+        $objPHPPowerPoint = new PHPPowerPoint();
+        $objPHPPowerPoint->getLayout()->setDocumentLayout(PHPPowerPoint_DocumentLayout::LAYOUT_A4, false);
+        $currentSlide = $objPHPPowerPoint->getActiveSlide();
+        
+        //Exporta o arquivo
+        $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
+        $arquivo = './tmp/teste.pptx';
+        $objWriter->save($arquivo);
+        $contentFile = file_get_contents($arquivo);
+        
+        echo "ok";
+        die;
+    }
 }

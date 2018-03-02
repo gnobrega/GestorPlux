@@ -11,7 +11,7 @@
     $objPHPPowerPoint = new PHPPowerPoint();
     $objPHPPowerPoint->getLayout()->setDocumentLayout(PHPPowerPoint_DocumentLayout::LAYOUT_A4, false);
     $currentSlide = $objPHPPowerPoint->getActiveSlide();
-    
+   
     //Compartilha os parâmtros com as funções
     $params = array(
         "objPHPPowerPoint" => $objPHPPowerPoint,
@@ -30,7 +30,7 @@
     
     //Monta a capa
     montarCapa($params);
-    
+
     //Relação de comprovantes
     $params['currentSlide'] = $objPHPPowerPoint->createSlide();
     montarRelacaoComprovantes($params);
@@ -41,13 +41,13 @@
     
     //Fotografias
     exibirFotos($params);
-        
+     
     //Exporta o arquivo
     $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
     $arquivo = './tmp/BOOKING.pptx';
     $objWriter->save($arquivo);
     $contentFile = file_get_contents($arquivo);
-    
+DIE;    
     //Força o download
     download($arquivo);
         
@@ -60,6 +60,7 @@
      * Monta a capa
      */
     function montarCapa(&$params) {
+        
         $currentSlide = $params['currentSlide'];
         $constTipo = $params['constTipo'];
         $campanha = $params['campanha'];
@@ -102,6 +103,7 @@
         }
         
         //TABELA DE DADOS
+        
         $table = $currentSlide->createTableShape(2);
         $table->setWidth(700);
         $table->setOffsetX(120);
@@ -131,7 +133,7 @@
         $shape->createBreak();
         $lin = $shape->createTextRun("OPEC: ");
         $lin->getFont()->setBold(true);
-        $lin = $shape->createTextRun($assinatura);
+        $lin = $shape->createTextRun($assinatura . " ");
         $lin->getFont()->setBold(false);
         $lin->getFont()->setSize(8);
         $lin->getFont()->setName("Roboto Condensed");
@@ -169,10 +171,7 @@
         $lin->getFont()->setSize(18);
         $lin->getFont()->setName("Roboto Condensed");
         $shape->createBreak();
-        
-        
-        
-        
+                
         //Monta os slides com as tabelas
         $yStart = 200;
         $yInterv = 25;
@@ -268,7 +267,6 @@
      * Cria as linhas da tabela da capa
      */
     function montarTabelaCapa(&$table, $data) {
-        
         foreach( $data as $col1 => $col2 ) {
             $bold = false;
             if( $col1 == "CLIENTE" || $col1 == "CAMPANHA" || $col1 == "PI" ) {
@@ -283,7 +281,7 @@
                 ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
                 ->setStartColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'))
                 ->setEndColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'));
-            $cell->createTextRun($col1)
+            $cell->createTextRun($col1 . " ")
                    ->getFont()
                    ->setSize(11)
                    ->setName("Roboto Condensed");
@@ -298,7 +296,7 @@
                 ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
                 ->setStartColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'))
                 ->setEndColor(new \PHPPowerPoint_Style_Color('FFFFFFFF'));
-            $cell->createTextRun($col2)
+            $cell->createTextRun($col2 . " ")
                     ->getFont()
                     ->setSize(11)
                     ->setBold($bold)
@@ -312,10 +310,6 @@
      */
     function montarTabelaComprovantes($currentSlide, $col = 1, $ambientes = array(), 
             $totalPorColuna, $tableY, &$params, &$pag = null, $assinatura = null) {
-        
-//        echo "<pre>";
-//        print_r($ambientes);
-//        die;
         
         $xTable = ( $col == 1 ) ? 65 : 400;
 
@@ -389,7 +383,7 @@
             for( $i = 0; $i < $totalPorColuna; $i ++ ) {
                 $ambienteId = null;    
                 if( isset($ambientes[$i]) ) {
-                    $ambienteNome = $ambientes[$i]['nome'];
+                    $ambienteNome = utf8_encode($ambientes[$i]['nome']);
                     $ambienteId = $ambientes[$i]['id'];
                 } else {
                     $ambienteNome = " ";
@@ -398,14 +392,14 @@
                 $row->setHeight(15);
 
                 $cell = $row->nextCell();
-                $textRun = $cell->createTextRun($ambienteNome);
+                $textRun = $cell->createTextRun($ambienteNome . " ");
                 $textRun->setFont($font2);
                 $cell->setFill($fill);
                 $cell->getBorders()->getBottom()->setColor($borderColor);
                 $cell->getBorders()->getLeft()->setColor($borderColor);
                 $cell->getBorders()->getRight()->setColor($borderColor);
                 $cell->getBorders()->getTop()->setColor($borderColor);
-                
+ 
                 $cell = $row->nextCell();
                 $cell->createTextRun(@$ambientes[$i]['telas']." ")->setFont($font2);
                 $cell->setFill($fill);
@@ -482,7 +476,7 @@
         $cell = $row->nextCell();
         $cell->setWidth(70);
         $cell->setFill($fillTitle);
-        $cell->createTextRun(utf8_encode("CLIENTE"))->setFont($font);
+        $cell->createTextRun(utf8_encode("CLIENTE") . " ")->setFont($font);
         $cell->getActiveParagraph()->setAlignment($align);
         
         $cell = $row->nextCell();
@@ -496,7 +490,7 @@
         $cell->getActiveParagraph()->getFont()->setSize(9);
         $cell->setWidth(80);
         $cell->setFill($fillTitle);
-        $cell->createTextRun(utf8_encode("CAMPANHA"))->setFont($font);
+        $cell->createTextRun(utf8_encode("CAMPANHA") . " ")->setFont($font);
         $cell->getActiveParagraph()->setAlignment($align);
         
         $cell = $row->nextCell();
@@ -535,7 +529,7 @@
         
         //peças
         $cellTitle = $row->nextCell();
-        $cellTitle->createTextRun(utf8_encode("PECAS"))->setFont($font);
+        $cellTitle->createTextRun(utf8_encode("PECAS") . " ")->setFont($font);
         $cellTitle->setFill($fillTitle);
          
         $cell = $row->nextCell();
@@ -578,7 +572,7 @@
         $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
         $lin = $shape->createTextRun(utf8_encode("OPEC: "));
         $lin->getFont()->setBold(true);
-        $lin = $shape->createTextRun(utf8_encode($assinatura));
+        $lin = $shape->createTextRun($assinatura . " ");
         $lin->getFont()->setBold(false);
         $lin->getFont()->setSize(8);
         $lin->getFont()->setName("Roboto Condensed");
@@ -600,7 +594,7 @@
         $shape->setOffsetY(1045);
         $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
 
-        $lin = $shape->createTextRun($pag);
+        $lin = $shape->createTextRun($pag . " ");
         $lin->getFont()->setSize(9)->setBold(false)->setName("Roboto Condensed");
         $shape->createBreak();
         
@@ -631,7 +625,7 @@
         $lin->getFont()->setBold(false);
         $lin->getFont()->setSize(18);
         $lin->getFont()->setName("Roboto Condensed");
-        $lin = $shape->createTextRun(utf8_encode($campanha['nome']));
+        $lin = $shape->createTextRun(utf8_encode($campanha['nome']) . " ");
         $lin->getFont()->setBold(true);
         $lin->getFont()->setSize(18);
         $lin->getFont()->setName("Roboto Condensed");
@@ -735,7 +729,7 @@
             ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
             ->setStartColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'))
             ->setEndColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'));
-        $cell->createTextRun($indice['nome_ambiente'] . " ($countImg)")
+        $cell->createTextRun(utf8_encode($indice['nome_ambiente']) . " ($countImg)")
                ->getFont()
                ->setSize(11)
                ->setBold(true)
