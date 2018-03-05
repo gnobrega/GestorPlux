@@ -39,8 +39,8 @@ class Model_S3BookingIndices extends Model_Abstract {
                 ->join("ambiente", "ambiente.id = {$this->_name}.id_ambiente")
                 ->where($where)
                 ->limit($limite, $offset)
-                ->order(array("data_foto DESC", "tela ASC", $this->_name . ".id DESC"));
-        
+                ->order(array("ambiente.nome ASC", "data_foto DESC", "tela ASC", $this->_name . ".id DESC"));
+
         //Carrega o resultado
         $indices = $adapter->fetchAll($sql);
         return array(
