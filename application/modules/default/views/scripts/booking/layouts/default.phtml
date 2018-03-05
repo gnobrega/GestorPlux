@@ -42,14 +42,18 @@
     //Fotografias
     exibirFotos($params);
      
+    //Gera o nome do arquivo - LOOK_BOOKING_PI_CAMPANHA_DATA
+    $camp = ( $this->campanha['pi'] ) ? $this->campanha['pi'] : $this->campanha['nome'];
+    $arquivoNome = "LOOK_BOOKING_{$camp}_" . date("Y_m_d");
+    
     //Exporta o arquivo
     $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
-    $arquivo = './tmp/BOOKING.pptx';
+    $arquivo = "./tmp/{$arquivoNome}.pptx";
     $objWriter->save($arquivo);
     $contentFile = file_get_contents($arquivo);
 
     //Força o download
-    download($arquivo);
+    download($arquivo, $arquivoNome);
         
     
     /*************************************/
@@ -766,10 +770,10 @@
         $countImg++;
     }
     
-    function download($file) {
+    function download($file, $arquivoNome) {
         // Configuramos os headers que serão enviados para o browser
         header('Content-Description: File Transfer');
-        header('Content-Disposition: attachment; filename="BOOKING.pptx"');
+        header('Content-Disposition: attachment; filename="' . $arquivoNome . '.pptx"');
         header('Content-Type: application/octet-stream');
         header('Content-Transfer-Encoding: binary');
         header('Content-Length: ' . filesize($file));
