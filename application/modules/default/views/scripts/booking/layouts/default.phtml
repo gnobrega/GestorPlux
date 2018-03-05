@@ -112,7 +112,7 @@
         $table->setOffsetX(120);
         $table->setOffsetY($tableY);
         $data = array(
-            "CLIENTE" => utf8_encode(strtoupper($cliente['nome_comercial'])),
+            "CLIENTE" => strtoupper(utf8_encode(strtoupper($cliente['nome_comercial']))),
             "CAMPANHA" => utf8_encode(strtoupper($campanha['nome'])),
             "PRODUTO" => utf8_encode($campanha['produto']),
             "PERÍODO" => Core_Global::dataBr($campanha['inicio']) . " A " . Core_Global::dataBr($campanha['fim']),
