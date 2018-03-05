@@ -115,9 +115,9 @@
             "CLIENTE" => utf8_encode(strtoupper($cliente['nome_comercial'])),
             "CAMPANHA" => utf8_encode(strtoupper($campanha['nome'])),
             "PRODUTO" => utf8_encode($campanha['produto']),
-            "PERIODO" => Core_Global::dataBr($campanha['inicio']) . " A " . Core_Global::dataBr($campanha['fim']),
+            "PERÍODO" => Core_Global::dataBr($campanha['inicio']) . " A " . Core_Global::dataBr($campanha['fim']),
             "PI" => $campanha['pi'],
-            "AGENCIA" => utf8_encode($agencia['nome_comercial'])
+            "AGÊNCIA" => utf8_encode($agencia['nome_comercial'])
         );
         montarTabelaCapa($table, $data);
         
@@ -507,7 +507,7 @@
         $cell->getActiveParagraph()->getFont()->setSize(9);
         $cell->setWidth(60);
         $cell->setFill($fillTitle);
-        $cell->createTextRun(utf8_encode("INICIO"))->setFont($font);
+        $cell->createTextRun("INÍCIO")->setFont($font);
         $cell->getActiveParagraph()->setAlignment($align);
         
         $cell = $row->nextCell();
@@ -532,7 +532,7 @@
         
         //peças
         $cellTitle = $row->nextCell();
-        $cellTitle->createTextRun(utf8_encode("PECAS") . " ")->setFont($font);
+        $cellTitle->createTextRun("PEÇAS" . " ")->setFont($font);
         $cellTitle->setFill($fillTitle);
          
         $cell = $row->nextCell();
