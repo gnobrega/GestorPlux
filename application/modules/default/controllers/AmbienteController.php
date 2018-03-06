@@ -28,8 +28,8 @@ class AmbienteController extends AbstractController {
         //Gera a tabela
         $this->view->grid = new Core_Grid($this->_entity);
         $this->view->grid->addColumn("Id", "id");
+        $this->view->grid->addColumn("Nome", "nome");
         $this->view->grid->addColumn("Empresa", "fk_empresa");
-        $this->view->grid->addColumn("Filial", "nome");
         $this->view->grid->addColumn("Canal", "fk_canal");
         $this->view->grid->addColumn("Telas", "telas");
     }
@@ -63,10 +63,10 @@ class AmbienteController extends AbstractController {
                     ->setName("_id");
         }
         
-        //Filial
+        //Nome
         $fieldName = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_nome")
-                ->setLabel("Filial")
+                ->setLabel("Nome")
                 ->setRequired(true)
                 ->setAutofocus(true);
         
