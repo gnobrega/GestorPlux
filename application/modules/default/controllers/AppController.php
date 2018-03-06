@@ -55,11 +55,11 @@ class AppController extends AbstractController {
                 $empresa = $empresas[0];
                 $endereco['google_ref'] = $endereco['google_ref'];
                 $endereco['complemento'] = $endereco['complemento'];
-                if( $ambiente['nome'] == 'Sem nome' ) {
+                /*if( $ambiente['nome'] == 'Sem nome' ) {
                     $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $endereco['complemento'];
                 } else {
                     $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $ambiente['nome'];
-                }
+                }*/
                 $rs['locations'][] = array(
                     "id"                => $ambiente['id'],
                     "name"              => $ambiente['nome'],
