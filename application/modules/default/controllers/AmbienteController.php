@@ -110,7 +110,13 @@ class AmbienteController extends AbstractController {
                     //Atualiza o endereço
                     $endereco['latitude'] = $latitude;
                     $endereco['longitude'] = $longitude;
-                    $mdlEndereco->update($endereco, "id = " . $endereco['id']);
+                    if( isset($endereco['id']) ) {
+                        $mdlEndereco->update($endereco, "id = " . $endereco['id']);
+                    } else {
+                        $id = $mdlEndereco->insert($endereco);
+                        $ambiente['id_endereco'] = $id;
+                        $this->_model->update($ambiente, "id = " . $ambiente['id']);
+                    }
                 }
             }
         }
