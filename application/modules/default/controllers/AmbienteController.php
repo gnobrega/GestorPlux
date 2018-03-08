@@ -94,22 +94,24 @@ class AmbienteController extends AbstractController {
             //Recupera o registro completo do ambiente
             $mdlEndereco = new Model_Endereco();
             $ambientes = $this->_model->find($rs['id'])->toArray();
-            if (count($ambientes)) {
-                $ambiente = $ambientes[0];
-                $endereco = array();
-                
-                //Recupera o endereço já salvo
-                if ($ambiente['id_endereco']) {
-                    $enderecos = $mdlEndereco->find($ambiente['id_endereco'])->toArray();
-                    if( count($enderecos) ) {
-                        $endereco = $enderecos[0];
+            if( $_POST['_latitude'] || $_POST['_longitude'] ) {
+                if (count($ambientes)) {
+                    $ambiente = $ambientes[0];
+                    $endereco = array();
+
+                    //Recupera o endereço já salvo
+                    if ($ambiente['id_endereco']) {
+                        $enderecos = $mdlEndereco->find($ambiente['id_endereco'])->toArray();
+                        if( count($enderecos) ) {
+                            $endereco = $enderecos[0];
+                        }
                     }
+
+                    //Atualiza o endereço
+                    $endereco['latitude'] = $latitude;
+                    $endereco['longitude'] = $longitude;
+                    $mdlEndereco->update($endereco, "id = " . $endereco['id']);
                 }
-                
-                //Atualiza o endereço
-                $endereco['latitude'] = $latitude;
-                $endereco['longitude'] = $longitude;
-                $mdlEndereco->update($endereco, "id = " . $endereco['id']);
             }
         }
 
