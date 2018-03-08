@@ -94,7 +94,7 @@ class AmbienteController extends AbstractController {
             //Recupera o registro completo do ambiente
             $mdlEndereco = new Model_Endereco();
             $ambientes = $this->_model->find($rs['id'])->toArray();
-            if( $_POST['_latitude'] || $_POST['_longitude'] ) {
+            if( $latitude || $longitude ) {
                 if (count($ambientes)) {
                     $ambiente = $ambientes[0];
                     $endereco = array();
