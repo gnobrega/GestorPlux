@@ -8583,3 +8583,6 @@ div.file-box div.file.selected div.correct {
     padding-top: 7px;
     font-weight: normal;
 }
+table tr.odd {
+    background: #f9f9f9 !important;
+}

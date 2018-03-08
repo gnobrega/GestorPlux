@@ -1,24 +1,158 @@
 <!-- Content Header (Page header) -->
 <?php echo $this->page()->header("Cadastro de ambiente") ?>
 
+<!-- Formulário -->
+<form id="form-entity" action="/ambiente/salvar" method="post" class="form-horizontal" >
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Formulário <small>Preencha todos os campos obrigatórios</small></h5>
+                </div>
+                <div class="ibox-content">
 
-<div class="row">
-    <div class="col-lg-12">
-        <div class="ibox float-e-margins">
-            <div class="ibox-title">
-                <h5>Formulário <small>Preencha todos os campos obrigatórios</small></h5>
+                    <!-- Id -->
+                    <input name='_id' value='<?php echo @$this->registro['id'] ?>' type='hidden' name='_id' />
+
+                    <!-- Nome -->
+                    <div class='form-group'>
+                        <label for='inpNome' class='col-sm-2 control-label'>* Nome</label>
+                        <div class='col-sm-10'>
+                            <input id="inpNome" name='_nome' required='1' autofocus='1' value='<?php echo @$this->registro['nome'] ?>' type='text' class='form-control' />
+                        </div>
+                    </div>
+
+                    <!-- Empresa -->
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>* Empresa</label>
+                        <div class='col-sm-10'>
+                            <?php
+                            echo $this->Component()->combo("empresa", array(
+                                "required" => true,
+                                "where" => "exibe_publicidade = 1",
+                                "value" => @$this->registro['id_empresa']));
+                            ?>
+                            <label id='combo-_id_empresa-error' class='error' for='combo-_id_empresa' ></label>
+                        </div>
+                    </div>
+
+                    <!-- Canal -->
+                    <div class='form-group'>
+                        <label class='col-sm-2 control-label'>Canal</label>
+                        <div class='col-sm-10'>
+                            <?php echo $this->Component()->combo("canal", array("value" => @$this->registro['id_canal'])); ?>
+                            <label id='combo-_id_canal-error' class='error' for='combo-_id_canal' ></label>
+                        </div>
+                    </div>
+
+                    <!-- Telas -->
+                    <div class='form-group'>
+                        <label for='inpTelas' class='col-sm-2 control-label'>Telas</label>
+                        <div class='col-sm-10'>
+                            <input id="inpTelas" name='_telas' value='<?php echo @$this->registro['telas'] ?>' type='text' class='form-control' />
+                        </div>
+                    </div>
+                    <div class='hr-line-dashed'></div>
+
+                    <!-- Botões -->
+                    <div class='form-group'>
+                        <div class='col-sm-4 col-sm-offset-2'>
+                            <button class='btn btn-primary' type='submit'>Salvar</button>
+                            <button class='btn btn-white btn-voltar' >Cancel</button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div class="ibox-content">
-                <?php
-                    $this->form->render();
-                ?>
+        </div>
+
+        <!-- Geolocalização -->
+        <div class="col-lg-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Geolocalização</h5>
+                </div>
+                <div class="ibox-content">
+
+                    <!-- Latitude -->
+                    <div class='form-group'>
+                        <label for='inpLatitude' class='col-sm-2 control-label'>Latitude</label>
+                        <div class='col-sm-10'>
+                            <input id="inpLatitude" name='_latitude' value='<?php echo @$this->endereco['latitude'] ?>' type='text' class='form-control' />
+                        </div>
+                    </div>
+
+                    <!-- Longitude -->
+                    <div class='form-group'>
+                        <label for='inpLongitude' class='col-sm-2 control-label'>Longitude</label>
+                        <div class='col-sm-10'>
+                            <input id="inpLongitude" name='_longitude' value='<?php echo @$this->endereco['longitude'] ?>' type='text' class='form-control' />
+                        </div>
+                    </div>
+                    
+                    <!-- Mapa -->
+                    <div id="mapa" class="col-xs-12" style="height:300px;"></div>
+                    
+                    <div style="clear:both"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+</form>
+
+<?php
+    $GOOGLE_API_KEY = 'AIzaSyBJ4UZ8SWKYKAKErasoFTK7Gkr4h7DXul8';
+    echo '<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?key=' . GOOGLE_API_KEY . '&signed_in=true&libraries=places"></script>';
+    echo "<script>var GOOGLE_API_KEY = '{$GOOGLE_API_KEY}';</script>";
+?>
 <script>
-
+    
     //Configurações default
-    Form.init("form-registro");
+    Form.init("form-entity");
+    
+    //Google maps
+    var geocoder;
+    var map;
+    var marker;
+    var infowindow = new google.maps.InfoWindow;
+    var latLong = null;
+    
+    //Inicializa o mapa
+    function initMap() {
+        var latlng;
+        var options = { mapTypeId: google.maps.MapTypeId.ROADMAP };
+
+        //Define as configurações iniciais
+        if( !$('#inpLatitude').val() || !$('#inpLongitude').val() ) {
+            latlng = new google.maps.LatLng(-15.793749098331325, -47.882628630273416);
+            options.zoom = 13;
+        } else {
+            latlng = new google.maps.LatLng(parseFloat($('#inpLatitude').val()), parseFloat($('#inpLongitude').val()));
+            options.zoom = 16;
+        }
+        options.center = latlng;
+        map = new google.maps.Map(document.getElementById("mapa"), options);
+        geocoder = new google.maps.Geocoder();
+        marker = new google.maps.Marker({
+            map: map,
+            draggable: true,
+        });
+
+        marker.setPosition(latlng);
+    }
+    initMap();
+    
+    //Ao posicionar o cursor no mapa manualmente
+    google.maps.event.addListener(marker, 'drag', function () {
+        geocoder.geocode({ 'latLng': marker.getPosition() }, function (results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                if (results[0]) { 
+                    $('#inpLatitude').val(marker.getPosition().lat());
+                    $('#inpLongitude').val(marker.getPosition().lng());
+                    latLong = marker.getPosition().lat() + "," + marker.getPosition().lng();
+                }
+            }
+        });
+    });
 </script>

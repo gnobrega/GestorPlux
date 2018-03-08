@@ -28,6 +28,9 @@ define("PATH_UPLOAD", PATH_PUBLIC . "upload" . DIRECTORY_SEPARATOR);
 define("PATH_GRUPOS", PATH_UPLOAD . "grupos" . DIRECTORY_SEPARATOR);
 define("PATH_TEMP", "./upload/tmp/");
 
+//API GOOGLE MAPS
+define("GOOGLE_API_KEY", "AIzaSyBJ4UZ8SWKYKAKErasoFTK7Gkr4h7DXul8");
+
 //AWS
 define("AWS_S3_CHECKIN_URL", "https://s3.amazonaws.com/checkin-fotografico/");
 define("AWS_S3_CHECKIN_BUCKET", "checkin-fotografico");

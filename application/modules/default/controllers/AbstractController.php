@@ -62,6 +62,11 @@ class AbstractController extends Zend_Controller_Action {
      */
     public function salvarAction($return = false) {
         
+        //Elimina o id se não estiver sendo usado
+        if( isset($_POST['_id']) && $_POST['_id'] == '' ) {
+            unset($_POST['_id']);
+        }
+        
         //Monta a entidade
         $registro = array();
         foreach ($_POST as $k => $value) {
