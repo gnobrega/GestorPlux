@@ -92,6 +92,7 @@ class AmbienteController extends AbstractController {
         if ($rs['id']) {
 
             //Recupera o registro completo do ambiente
+            $mdlEndereco = new Model_Endereco();
             $ambientes = $this->_model->find($rs['id'])->toArray();
             if (count($ambientes)) {
                 $ambiente = $ambientes[0];
@@ -99,7 +100,6 @@ class AmbienteController extends AbstractController {
                 
                 //Recupera o endereço já salvo
                 if ($ambiente['id_endereco']) {
-                    $mdlEndereco = new Model_Endereco();
                     $enderecos = $mdlEndereco->find($ambiente['id_endereco'])->toArray();
                     if( count($enderecos) ) {
                         $endereco = $enderecos[0];
