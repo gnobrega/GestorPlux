@@ -86,6 +86,9 @@ class AmbienteController extends AbstractController {
         unset($_POST['_longitude']);
 
         //Salva o ambiente
+        if( $_POST['_telas'] == '' ) {
+            $_POST['_telas'] = 0;
+        }
         $rs = parent::salvarAction(true);
 
         //Salva o endereço
