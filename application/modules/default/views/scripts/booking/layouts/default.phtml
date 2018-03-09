@@ -414,7 +414,7 @@
                 
                 //Página
                 $cell = $row->nextCell();
-                $cell->createTextRun("0")->setFont($font);
+                $cell->createTextRun(" ")->setFont($font);
                 $cell->setFill($fill);
                 $cell->getActiveParagraph()->setAlignment($align);
                 $cell->getBorders()->getBottom()->setColor($borderColor);
@@ -657,7 +657,7 @@
         //Gera os slides
         $slidesDados = array();
         $idx = 0;
-        $porPagina = 6;
+        $porPagina = 8;
         $ultimoAmbiente = null;
         $countImg = null;
         foreach( $indices as $i => $indice ) {
@@ -684,14 +684,17 @@
         $imgWidth = 318;
         $xy = array(
             //lin1
-            array('xImg'=>63,'yImg'=>130),
-            array('xImg'=>400,'yImg'=>130), 
+            array('xImg'=>63,'yImg'=>110),
+            array('xImg'=>400,'yImg'=>110), 
             //lin2
-            array('xImg'=>63,'yImg'=>430),
-            array('xImg'=>400,'yImg'=>430),
+            array('xImg'=>63,'yImg'=>335),
+            array('xImg'=>400,'yImg'=>335),
             //lin3
-            array('xImg'=>63,'yImg'=>730),
-            array('xImg'=>400,'yImg'=>730),
+            array('xImg'=>63,'yImg'=>560),
+            array('xImg'=>400,'yImg'=>560),
+            //lin4
+            array('xImg'=>63,'yImg'=>785),
+            array('xImg'=>400,'yImg'=>785),
         );
                 
         //Fotos
@@ -711,7 +714,7 @@
             
             //Altera a página no slide de comprovantes
             if( isset($params['ambientesMap'][$ultimoAmbiente]) ) {
-                $p = $params['objPHPPowerPoint']->getIndex($currentSlide);
+                $p = $params['objPHPPowerPoint']->getIndex($currentSlide) + 1;
                 $paragraphs = $params['ambientesMap'][$ultimoAmbiente]->getParagraphs();
                 $elements = $paragraphs[0]->getRichTextElements();
                 $elements[0]->setText($p);
@@ -728,6 +731,7 @@
         
         $row = $table->createRow();
         $cell = $row->nextCell();
+        $row->setHeight(20);
         $cell->getFill()
             ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
             ->setStartColor(new \PHPPowerPoint_Style_Color('F3F3F3F3'))
@@ -750,7 +754,7 @@
 
         //foto
         $row = $table->createRow();
-        $row->setHeight(195);
+        $row->setHeight(187);
         $cell = $row->nextCell();
         $cell->getFill()
             ->setFillType(PHPPowerPoint_Style_Fill::FILL_GRADIENT_LINEAR)
@@ -763,9 +767,9 @@
         
         $fotoImg = $currentSlide->createDrawingShape();
         $fotoImg->setPath($indice['fotoLocal']);
-        $fotoImg->setWidth($width - 10 );
-        $fotoImg->setOffsetX($x + 5);
-        $fotoImg->setOffsetY($y + 50);
+        $fotoImg->setWidth($width);
+        $fotoImg->setOffsetX($x);
+        $fotoImg->setOffsetY($y + 28);
                 
         $countImg++;
     }
