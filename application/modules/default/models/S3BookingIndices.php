@@ -13,7 +13,13 @@ class Model_S3BookingIndices extends Model_Abstract {
     /**
      * Pesquisa os índices
      */
-    public function pesquisar($canais, $inicio, $fim, $limite, $pag = 1, $ambienteId = null) {
+    public function pesquisar($canais, $campAmbientesIds, $inicio, $fim, $limite, $pag = 1, $ambienteId = null) {
+        
+        //Se não houver ambientes retorna vazio
+        if( !count($campAmbientesIds) ) {
+            return array();
+        }
+        
         $adapter = $this->getAdapter();
         $offset = ($pag - 1) * $limite;
         $where = "data_foto BETWEEN '{$inicio}' AND '{$fim}'";
@@ -21,6 +27,7 @@ class Model_S3BookingIndices extends Model_Abstract {
             $where .= " AND id_ambiente = " . $ambienteId;
         } else {
             $where .= " AND ambiente.id_canal IN (" . implode(",", $canais) . ")";
+            $where .= " AND ambiente.id IN (" . implode(",", $campAmbientesIds) . ")";
         }
          
         //Calcula o total de itens
@@ -53,10 +60,17 @@ class Model_S3BookingIndices extends Model_Abstract {
     /**
      * Calcula a quantidade de fotos por ambiente
      */
-    public function calcularFotoAmbientes($canais, $inicio, $fim) {
+    public function calcularFotoAmbientes($canais, $campAmbientesIds, $inicio, $fim) {
+        
+        //Se não houver ambientes retorna vazio
+        if( !count($campAmbientesIds) ) {
+            return array();
+        }
+        
         $adapter = $this->getAdapter();
         $where = "data_foto BETWEEN '{$inicio}' AND '{$fim}'";
         $where .= " AND ambiente.id_canal IN (" . implode(",", $canais) . ")";
+        $where .= " AND ambiente.id IN (" . implode(",", $campAmbientesIds) . ")";
         
         //Calcula o total de itens
         $sql = $adapter
@@ -65,7 +79,6 @@ class Model_S3BookingIndices extends Model_Abstract {
             ->join("ambiente", "ambiente.id = {$this->_name}.id_ambiente")
             ->where($where)
             ->group('id_ambiente');
-        
         $rs = $adapter->fetchAll($sql);
         return $rs;
     }

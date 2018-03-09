@@ -185,8 +185,8 @@
         var $dataInicio = $("#form-booking-fotos input[name=dt_inicio]");
         var $dataFim = $("#form-booking-fotos input[name=dt_fim]");
         var $canais = $("select[name='canais[]']");
-        var campanhaId = getAmbienteSelecionado();
-        carregarFotos($canais.val(), $dataInicio.val(), $dataFim.val(), page, false, campanhaId);
+        var ambienteId = getAmbienteSelecionado();
+        carregarFotos($canais.val(), $dataInicio.val(), $dataFim.val(), page, false, ambienteId);
         
         //On top
         window.scrollTo(0, 0);
@@ -270,7 +270,7 @@
     }
     
     //Carrega as fotos
-    function carregarFotos(canais, dataInicio, dataFim, pagina, atualizarTreeview, campanhaId) {
+    function carregarFotos(canais, dataInicio, dataFim, pagina, atualizarTreeview, ambienteId) {
         click1 = null;
         currentPage = pagina;
         $('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
@@ -280,10 +280,11 @@
             data_inicio: dataInicio,
             data_fim: dataFim,
             pagina: pagina,
-            canais: canais
+            canais: canais,
+            campanha_id: $("select[name=id_campanha]").val()
         }
-        if( campanhaId ) {
-            filtros.ambiente_id = campanhaId;
+        if( ambienteId ) {
+            filtros.ambiente_id = ambienteId;
         }
         $.get("/booking/carregar-imagens?"+jQuery.param(filtros), function(rs) {
             var dados = getResponse(rs);
@@ -395,12 +396,12 @@
             if( lastTreeItem && lastTreeItem == data.node.id ) {
                 $('#jstree1').jstree(true).deselect_all();
                 lastTreeItem = null;
-                campanhaId = null;
+                ambienteId = null;
                 carregarFotos($canais.val(), $dataInicio.val(), $dataFim.val(), 1, false);
             } else {
                 lastTreeItem = data.node.id;
-                var campanhaId = data.node.id;
-                carregarFotos($canais.val(), $dataInicio.val(), $dataFim.val(), 1, false, campanhaId);
+                var ambienteId = data.node.id;
+                carregarFotos($canais.val(), $dataInicio.val(), $dataFim.val(), 1, false, ambienteId);
             }
         });
     }

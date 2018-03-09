@@ -93,13 +93,22 @@ class BookingController extends AbstractController {
         $dataFim = Core_Global::dataIso($_GET['data_fim']);
         $pagina = $_GET['pagina'];
         $canaisIds = $_GET['canais'];
+        $campanhaId = $_GET['campanha_id'];
         $ambienteId = ( isset($_GET['ambiente_id']) ) ? $_GET['ambiente_id'] : null;
-        
+
         //Carrega a lista de ambientes
         $mdlAmbiente = new Model_Ambiente();
         $ambientes = $mdlAmbiente->fetchAll()->toArray();
         Core_Global::attrToKey($ambientes, "id");
         Core_Global::encodeListUtf($ambientes, true);
+        
+        //Carrega os ambientes da campanha
+        $mdlCampAmbientes = new Model_Generic("campanha_ambiente");
+        $relCampAmbientes = $mdlCampAmbientes->fetchAll("id_campanha = ".$campanhaId)->toArray();
+        $campAmbientesIds = array();
+        foreach( $relCampAmbientes as $rel ) {
+            $campAmbientesIds[] = $rel['id_ambiente'];
+        }
         
         //Carrega a lista de empresas
         $mdlEmpresa = new Model_Empresa();
@@ -121,7 +130,7 @@ class BookingController extends AbstractController {
 
         //Calcula o número de fotos por ambiente
         $mdlIndices = new Model_S3BookingIndices();
-        $rsSoma = $mdlIndices->calcularFotoAmbientes($canaisIds, $dataInicio, $dataFim);
+        $rsSoma = $mdlIndices->calcularFotoAmbientes($canaisIds, $campAmbientesIds, $dataInicio, $dataFim);
         Core_Global::attrToKey($rsSoma, "id_ambiente");
         foreach( $rsSoma as $totalAmbiente ) {
             $ambId = $totalAmbiente['id_ambiente'];
@@ -139,7 +148,7 @@ class BookingController extends AbstractController {
         }
         
         //Carrega as imagens a partir dos índices
-        $rs = $mdlIndices->pesquisar($canaisIds, $dataInicio, $dataFim, 56, $pagina, $ambienteId);
+        $rs = $mdlIndices->pesquisar($canaisIds, $campAmbientesIds, $dataInicio, $dataFim, 56, $pagina, $ambienteId);
         Core_Global::encodeListUtf($rs['indices'], 1);
         foreach( $rs['indices'] as $i => $indice ) {
             $ambienteId = $indice['id_ambiente'];
