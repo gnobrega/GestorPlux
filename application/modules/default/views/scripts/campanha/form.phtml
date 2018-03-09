@@ -39,9 +39,8 @@
             var canaisId = $("select[name='canais[]']").val();
             $("select[name='ambientes[]']").html("");
             if( canaisId.length ) {
-                var canaisIdStr = canaisId.join(",");
                 var options = "";
-                $.get("/ambiente/list-json", {filter:"id_canal IN ("+canaisIdStr+")"}, function(ambientes) {
+                $.get("/campanha/carregar-combo-ambientes", {canais:canaisId}, function(ambientes) {
                     for( i in ambientes ) {
                         options += "<option value='"+ambientes[i].id+"'>"+ambientes[i].nome+"</option>";
                     }

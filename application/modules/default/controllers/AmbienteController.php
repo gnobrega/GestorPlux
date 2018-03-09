@@ -128,37 +128,6 @@ class AmbienteController extends AbstractController {
     }
 
     /**
-     * Retorna a lista em formato de Json
-     */
-    public function listJsonAction() {
-        $ambienteModel = new Model_Ambiente();
-        $where = ( isset($_GET['filter']) ) ? $_GET['filter'] : null;
-        $lst = $ambienteModel->fetchAll($where)->toArray();
-        Core_Global::encodeListUtf($lst, true);
-
-        //Carrega a lista das empresa
-        $mdlEmpresa = new Model_Empresa();
-        $empresas = $mdlEmpresa->fetchAll()->toArray();
-        Core_Global::encodeListUtf($empresas, true);
-        Core_Global::attrToKey($empresas, 'id');
-
-        //Gera o nome
-        foreach ($lst as $i => $ambiente) {
-            $empresaId = $ambiente['id_empresa'];
-            if (isset($empresas[$empresaId])) {
-                if ($ambiente['nome'] == 'Sem nome') {
-                    $lst[$i]['nome'] = $empresas[$empresaId]['nome_comercial'];
-                } else {
-                    $lst[$i]['nome'] = $empresas[$empresaId]['nome_comercial'] . ' - ' . $lst[$i]['nome'];
-                }
-            }
-        }
-
-        echo json_encode($lst);
-        die;
-    }
-
-    /**
      * Importa todos os pontos do Gestor Look
      */
     public function importarTodosAction() {

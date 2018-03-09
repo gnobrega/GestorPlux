@@ -11,7 +11,7 @@ var Form = {
         $('input.phone').mask("(99) 9999-9999?9");
         $('input.cep').mask("99999-999");
         $('input.time').mask("99:99");
-        $('input.cnpj').mask("999.999.999/9999-99");
+        $('input.cnpj').mask("99.999.999/9999-99");
         $('input.datepicker').mask("99/99/9999");
         $('.chosen-select').chosen();
         $('.input-group.datepicker').datepicker({
