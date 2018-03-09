@@ -696,7 +696,7 @@
             array('xImg'=>63,'yImg'=>785),
             array('xImg'=>400,'yImg'=>785),
         );
-                
+   
         //Fotos
         $ultimaFoto = null;
         foreach( $slideDados as $f => $foto ) {
@@ -764,16 +764,38 @@
         $cell->getBorders()->getLeft()->setColor($borderColor);
         $cell->getBorders()->getRight()->setColor($borderColor);
         $cell->getBorders()->getTop()->setColor($borderColor);
-        
         $fotoImg = $currentSlide->createDrawingShape();
         $fotoImg->setPath($indice['fotoLocal']);
         $fotoImg->setWidth($width);
         $fotoImg->setOffsetX($x);
         $fotoImg->setOffsetY($y + 28);
+        
+        //Exibe a data da foto
+        exibirDataFoto($currentSlide, $indice['data_foto'], $x + 210, $y + 170);
                 
         $countImg++;
     }
     
+    /**
+     * Exibir data foto
+     */
+    function exibirDataFoto($currentSlide, $data, $x, $y) {
+        $data = Core_Global::dataBr($data);
+        $shape = $currentSlide->createRichTextShape();
+        $shape->setHeight(30);
+        $shape->setWidth(100);
+        $shape->setOffsetX($x);
+        $shape->setOffsetY($y);
+        $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
+        $lin = $shape->createTextRun($data . " ");
+        $lin->getFont()->setBold(true);
+        $lin->getFont()->setSize(12);
+        $lin->getFont()->setColor(new PHPPowerPoint_Style_Color('ebf100'));
+    }
+    
+    /**
+     * Realiza o download das fotos
+     */
     function download($file, $arquivoNome) {
         // Configuramos os headers que serão enviados para o browser
         header('Content-Description: File Transfer');
