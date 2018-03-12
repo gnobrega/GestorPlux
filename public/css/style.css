@@ -4841,7 +4841,7 @@ ul.notes li div {
 /* FILE MANAGER */
 .file-box {
   float: left;
-  width: 220px;
+  width: 280px;
 }
 .file-manager h5 {
   text-transform: uppercase;
@@ -4921,7 +4921,7 @@ ul.notes li div {
 }
 .file .icon,
 .file .image {
-  height: 100px;
+  height: 145px;
   overflow: hidden;
 }
 .file .icon {
