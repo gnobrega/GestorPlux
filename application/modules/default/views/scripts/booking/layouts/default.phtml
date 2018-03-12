@@ -44,7 +44,7 @@
      
     //Gera o nome do arquivo - LOOK_BOOKING_PI_CAMPANHA_DATA
     $camp = ( $this->campanha['pi'] ) ? $this->campanha['pi'] : $this->campanha['nome'];
-    $arquivoNome = "LOOK_BOOKING_{$camp}_" . date("Y_m_d");
+    $arquivoNome = strtolower("LOOK_BOOKING_{$camp}_" . date("Y_m_d"));
     
     //Exporta o arquivo
     $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
@@ -120,6 +120,9 @@
             "AGÊNCIA" => utf8_encode($agencia['nome_comercial'])
         );
         montarTabelaCapa($table, $data);
+        
+        //CARIMBO
+        exibirCarimbo($currentSlide, 1);
         
         //RODAPÉ DA CAPA
         $shape = $currentSlide->createRichTextShape();
@@ -245,6 +248,9 @@
                 }
             }
         }
+        
+        //CARIMBO
+        exibirCarimbo($currentSlide, 1);
         
         //Mensagem final
         $shape = $currentSlide->createRichTextShape();
@@ -638,6 +644,9 @@
         $lin->getFont()->setSize(9);
         $lin->getFont()->setName("Roboto Condensed");
         
+        //CARIMBO
+        exibirCarimbo($currentSlide, 1);
+        
         //Rodapé
         exibirRodape($currentSlide, $pag, $assinatura);
     }
@@ -671,6 +680,8 @@
             exibirCabecalho($currentSlide, $campanha, $cliente);
             montarSlideFotos($slideDados, $currentSlide, $campanha, $cliente, $ambientes, 
                     $ultimoAmbiente, $countImg, $params);
+            //CARIMBO
+            exibirCarimbo($currentSlide, 2);
             exibirRodape($currentSlide, $pag, $assinatura);
         }
     }
@@ -788,6 +799,28 @@
         $lin->getFont()->setBold(true);
         $lin->getFont()->setSize(10);
         $lin->getFont()->setColor(new PHPPowerPoint_Style_Color('ebf100'));
+    }
+    
+    /**
+     * Exibe o carimbo
+     */
+    function exibirCarimbo($currentSlide, $pos) {
+        switch( $pos ) {
+            case 1:
+                $x = 300;
+                $y = 900;
+                break;
+            case 2:
+                $x = 300;
+                $y = 960;
+                break;
+        }
+        $shape = $currentSlide->createDrawingShape();
+        $img = "carimbo-look.jpg";
+        $shape->setPath('./img/' . $img);
+        $shape->setHeight(81);
+        $shape->setOffsetX($x);
+        $shape->setOffsetY($y);
     }
     
     /**
