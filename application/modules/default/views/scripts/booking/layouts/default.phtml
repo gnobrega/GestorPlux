@@ -657,7 +657,7 @@
         //Gera os slides
         $slidesDados = array();
         $idx = 0;
-        $porPagina = 8;
+        $porPagina = 6;
         $ultimoAmbiente = null;
         $countImg = null;
         foreach( $indices as $i => $indice ) {
@@ -687,14 +687,11 @@
             array('xImg'=>63,'yImg'=>110),
             array('xImg'=>400,'yImg'=>110), 
             //lin2
-            array('xImg'=>63,'yImg'=>335),
-            array('xImg'=>400,'yImg'=>335),
+            array('xImg'=>63,'yImg'=>395),
+            array('xImg'=>400,'yImg'=>395),
             //lin3
-            array('xImg'=>63,'yImg'=>560),
-            array('xImg'=>400,'yImg'=>560),
-            //lin4
-            array('xImg'=>63,'yImg'=>785),
-            array('xImg'=>400,'yImg'=>785),
+            array('xImg'=>63,'yImg'=>680),
+            array('xImg'=>400,'yImg'=>680),
         );
    
         //Fotos
@@ -771,7 +768,7 @@
         $fotoImg->setOffsetY($y + 28);
         
         //Exibe a data da foto
-        exibirDataFoto($currentSlide, $indice['data_foto'], $x + 210, $y + 170);
+        exibirDataFoto($currentSlide, $indice['data_foto'], $x + 215, $y + 230);
                 
         $countImg++;
     }
@@ -789,7 +786,7 @@
         $shape->getActiveParagraph()->getAlignment()->setHorizontal(PHPPowerPoint_Style_Alignment::HORIZONTAL_CENTER );
         $lin = $shape->createTextRun($data . " ");
         $lin->getFont()->setBold(true);
-        $lin->getFont()->setSize(12);
+        $lin->getFont()->setSize(10);
         $lin->getFont()->setColor(new PHPPowerPoint_Style_Color('ebf100'));
     }
     
