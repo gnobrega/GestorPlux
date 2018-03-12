@@ -123,6 +123,7 @@ class CampanhaController extends AbstractController {
         $this->view->form->addField(Core_Form_Field::$TYPE_SELECT)
                 ->setName("ambientes[]")
                 ->setLabel("Ambientes")
+                ->setRequired(true)
                 ->setAttr("firstNull", false)
                 ->setMultiple(true)
                 ->setEmpty(true);
@@ -131,12 +132,14 @@ class CampanhaController extends AbstractController {
         $campoInicio = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_inicio")
                 ->setLabel("Início")
+                ->setRequired(true)
                 ->addClass("datepicker");
         
         //Fim
         $campoFim = $this->view->form->addField(Core_Form_Field::$TYPE_TEXT)
                 ->setName("_fim")
                 ->setLabel("Fim")
+                ->setRequired(true)
                 ->addClass("datepicker");
         
         //Preenche os campos com os dados vindo de importação
