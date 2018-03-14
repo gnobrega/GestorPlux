@@ -9,6 +9,11 @@ class BookingController extends AbstractController {
      * @param array $invokeArgs
      */
     public function __construct(\Zend_Controller_Request_Abstract $request, \Zend_Controller_Response_Abstract $response, array $invokeArgs = array()) {
+        
+        //Inicia a model
+        $this->_model = new Model_Booking();
+        $this->_entity = $this->_model->getName();
+        
         parent::__construct($request, $response, $invokeArgs);
         
         //Breadcrumb
@@ -16,9 +21,26 @@ class BookingController extends AbstractController {
     }
     
     /**
-     * Gestão de usuários
+     * Lista de booking
      */
     public function indexAction() {
+
+        //Gera a tabela
+        $this->view->grid = new Core_Grid($this->_entity);
+        $this->view->grid->addColumn("Id", "id", array("order"=>"desc"));
+        $this->view->grid->addColumn("Campanha", "fk_campanha");
+    }
+    
+    /**
+     * Cadastra um novo registro
+     */
+    public function cadastrarAction() {
+        
+        //Breadcrumb
+        $this->addBreadcrumb("Cadastro");
+        
+        //Renderiza a view
+        $this->renderScript($this->_entity.'/form.phtml');
     }
     
     /**
@@ -505,24 +527,64 @@ class BookingController extends AbstractController {
         }
     }
     
-    public function testeAction() {
+    /**
+     * Salva o registro
+     */
+    public function salvarAction() {
+       
+        $canais = $_POST['canais_ids'];
+        unset($_POST['canais_ids']);
         
-        $pathClass = realpath(APPLICATION_PATH . "/../library/PHPPowerPoint/Classes");
-        set_include_path(get_include_path() . PATH_SEPARATOR . $pathClass);
-        require 'PHPPowerPoint.php';
-        require 'PHPPowerPoint/IOFactory.php';
+        //Salva o registro
+        $booking = array(
+            "id_campanha" => $_POST['campanha_id'],
+            "tipo" => $_POST['tipo'],
+            "layout" => $_POST['layout'],
+            "assinatura" => $_POST['assinatura'],
+            "fotos" => $_POST['fotos']
+        );
+        $rs = $this->_model->salvar($booking);
+        if( $rs ) {
+            //Salva a relação com os canais
+            $mdlBookCanal = new Model_Generic("booking_canal");
+            $mdlBookCanal->delete("id_booking = " . $booking['id']);
+            foreach( $canais as $canalId ) {
+                $mdlBookCanal->insert(array(
+                    "id_booking" => $booking['id'],
+                    "id_canal" => $canalId
+                ));
+            }
+            
+            //Gera a notificação
+            Core_Notificacao::adicionarMensagem("Registro salvo com sucesso", "success");
+        }
         
-        $objPHPPowerPoint = new PHPPowerPoint();
-        $objPHPPowerPoint->getLayout()->setDocumentLayout(PHPPowerPoint_DocumentLayout::LAYOUT_A4, false);
-        $currentSlide = $objPHPPowerPoint->getActiveSlide();
+        //Resposta
+        $this->returnSuccess();
+    }
+    
+    /**
+     * Método Editar
+     */
+    public function editarAction() {
         
-        //Exporta o arquivo
-        $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
-        $arquivo = './tmp/teste.pptx';
-        $objWriter->save($arquivo);
-        $contentFile = file_get_contents($arquivo);
+        //Breadcrumb
+        $this->addBreadcrumb("Edição");
         
-        echo "ok";
-        die;
+        //Carrega os dados
+        $registro = $this->_model->find($this->getParam('id'))->current()->toArray();
+        Core_Global::encodeListUtf($registro);
+        
+        //Carrega os relacionamentos com os canais
+        $modRel = new Model_Generic("booking_canal");
+        $bookCanais = $modRel->fetchAll("id_booking = " . $this->getParam('id'))->toArray();
+        foreach( $bookCanais as $bookCanal ) {
+            $registro['canais'][] = $bookCanal['id_canal'];
+        }
+        
+        $this->view->registro = $registro;
+        
+        //Renderiza a view
+        $this->renderScript($this->_entity.'/form.phtml');
     }
 }
