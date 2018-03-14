@@ -9,6 +9,13 @@
                 <div class="ibox-content form-horizontal">
                     <form id="form-booking" action="" method="post" class="form-horizontal">
                         
+                        <!-- id -->
+                        <?php
+                            if( isset($this->registro['id']) ) {
+                                echo "<input type='hidden' name='id' value='{$this->registro['id']}' />";
+                            }
+                        ?>
+                        
                         <!-- Campanha -->
                         <div class="form-group">
                             <label for="" class="col-sm-2 control-label">* Campanha</label>

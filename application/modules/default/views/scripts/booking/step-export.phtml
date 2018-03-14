@@ -64,6 +64,9 @@
                 assinatura: $("[name=assinatura]").val(),
                 fotos: JSON.stringify(listaFotos)
             };
+            if( $("[name=id]").length ) {
+                dados.id = $("[name=id]").val();
+            }
             $.post("/booking/salvar", dados, function (rs) {
                 if( rs.status == 'success' ) {
                     window.location = "/booking";

@@ -531,7 +531,6 @@ class BookingController extends AbstractController {
      * Salva o registro
      */
     public function salvarAction() {
-       
         $canais = $_POST['canais_ids'];
         unset($_POST['canais_ids']);
         
@@ -543,6 +542,9 @@ class BookingController extends AbstractController {
             "assinatura" => $_POST['assinatura'],
             "fotos" => $_POST['fotos']
         );
+        if( isset($_POST['id']) ) {
+            $booking['id'] = $_POST['id'];
+        }
         $rs = $this->_model->salvar($booking);
         if( $rs ) {
             //Salva a relação com os canais
