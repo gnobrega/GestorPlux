@@ -44,31 +44,28 @@ class AppController extends AbstractController {
         $mdlEndereco = new Model_Endereco();
         $ambientes = $mdlAmbiente->fetchAll(null, 'nome')->toArray();
         
-        foreach( $ambientes as $ambiente ) {
+        foreach( $ambientes as $ca => $ambiente ) {
             $enderecos = array();
             if( $ambiente['id_endereco'] ) {
                 $enderecos = $mdlEndereco->fetchAll("id = " . $ambiente['id_endereco'])->toArray();
             }
             $empresas = $mdlEmpresa->fetchAll("id = " . $ambiente['id_empresa'])->toArray();
+            
+            $rs['locations'][$ca] = array(
+                "id"                => $ambiente['id'],
+                "name"              => $ambiente['nome'],
+                "id_ponto_look"     => $ambiente['id_ponto_look'],
+                "id_route"          => 0,
+                "id_channel"        => $ambiente['id_canal'],
+            );
+            
             if( count($enderecos) && count($empresas) ) {
                 $endereco = $enderecos[0];
                 $empresa = $empresas[0];
                 $endereco['google_ref'] = $endereco['google_ref'];
                 $endereco['complemento'] = $endereco['complemento'];
-                /*if( $ambiente['nome'] == 'Sem nome' ) {
-                    $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $endereco['complemento'];
-                } else {
-                    $ambiente['nome'] = $empresa['nome_comercial'] . " - " . $ambiente['nome'];
-                }*/
-                $rs['locations'][] = array(
-                    "id"                => $ambiente['id'],
-                    "name"              => $ambiente['nome'],
-                    "id_ponto_look"     => $ambiente['id_ponto_look'],
-                    "id_route"          => 0,
-                    "id_channel"        => $ambiente['id_canal'],
-                    "latitude"          => $endereco['latitude'],
-                    "longitude"         => $endereco['longitude']
-                );
+                $rs['locations'][$ca]["latitude"] = $endereco['latitude'];
+                $rs['locations'][$ca]["longitude"] = $endereco['longitude'];
             }
         }
         Core_Global::encodeListUtf($rs['locations'], true);
