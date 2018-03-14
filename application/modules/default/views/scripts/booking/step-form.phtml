@@ -13,7 +13,8 @@
                         <div class="form-group">
                             <label for="" class="col-sm-2 control-label">* Campanha</label>
                             <div class="col-sm-10">
-                                <?php echo $this->Component()->combo("campanha", array("required"=>true, "name"=>"id_campanha")); ?>
+                                <?php echo $this->Component()->combo("campanha", 
+                                        array("required"=>true, "name"=>"id_campanha")); ?>
                                 <label id="combo-id_campanha-error" class="error" for="combo-id_campanha"></label>
                             </div>
                         </div>
@@ -39,27 +40,27 @@
                             </div>
                         </div>
                                          
-                        <!-- Campanha 
-                        <div class="form-group">
-                            <label for="" class="col-sm-2 control-label">Número da Nota</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" name="n_nota" />
-                            </div>
-                        </div>-->
-                                         
                         <!-- Layout -->
                         <div class="form-group">
                             <label for="" class="col-sm-2 control-label">Layout</label>
                             <div class="col-sm-10">
-                                <?php echo $this->Component()->comboConstant('BOOKING_LAYOUT', "layout", array("firstNull"=>false)); ?>
+                                <?php echo $this->Component()->comboConstant('BOOKING_LAYOUT', "layout", array("firstNull"=>false,
+                                    "value"=>@$this->registro['layout'])); ?>
                             </div>
                         </div>
                                          
                         <!-- Assinatura -->
+                        <?php
+                            if( isset($this->registro['assinatura']) ) {
+                                $assinatura = $this->registro['assinatura'];
+                            } else {
+                                $assinatura = "OPEC: Samuel Ferreira de Andrade _ CPF: 032.042.821-47 _ RG: 2.799.371 - SSP/DF";
+                            }
+                        ?>
                         <div class="form-group">
                             <label for="" class="col-sm-2 control-label">Assinatura</label>
                             <div class="col-sm-10">
-                                <input type="text" name="assinatura" class="form-control" value="OPEC: ​Samuel Ferreira de Andrade _ CPF: 032.042.821-47 _ RG: 2.799.371 - SSP/DF​" />
+                                <input type="text" name="assinatura" class="form-control" value="<?php echo $assinatura ?>" />
                             </div>
                         </div>
 
@@ -72,6 +73,36 @@
 </div>
 
 <script>
+    var canaisSelecionados = new Array();
+    
+    $(function() {
+        <?php
+            if( isset($this->registro) ) {
+                
+                //Preenche o campo de campanha
+                echo "$('[name=id_campanha]').val({$this->registro['id_campanha']});\n";
+                echo "$('[name=id_campanha]').trigger('chosen:updated');\n";
+                echo "$('[name=id_campanha]').trigger('change');\n";
+                
+                //Canais
+                if( $this->registro['canais'] ) {
+                    foreach( $this->registro['canais'] as $canal ) {
+                        echo "canaisSelecionados.push({$canal});\n";
+                    }
+                }
+                
+                //Preenche o campo de layout
+                echo "$('[name=layout]').val({$this->registro['layout']});\n";
+                echo "$('[name=layout]').trigger('chosen:updated');\n";
+                
+                //Fotos
+                if( isset($this->registro['fotos']) && $this->registro['fotos'] ) {
+                    echo "listaFotos = JSON.parse('{$this->registro['fotos']}');\n";
+                }
+            }
+        ?>
+    });
+    
     //Configurações default
     Form.init("form-booking");    
         
@@ -80,6 +111,15 @@
     //Carrega os canais de acordo com a campanha selecionada
     var $comboCampanha = $("select[name='id_campanha']");
     var $comboCanal =  $("select[name='canais[]']");
+    Form.callback = function() {
+        if( canaisSelecionados ) {
+            for( i in canaisSelecionados ) {
+                $comboCanal.find("option[value=" + canaisSelecionados[i] + "]").prop("selected", true);
+                $comboCanal.trigger('chosen:updated');
+                canaisSelecionados = new Array();
+            }
+        }
+    }
     Form.filterCombo($comboCanal, $comboCampanha, "/campanha/canais-por-campanha");
         
     //Submete o formulário

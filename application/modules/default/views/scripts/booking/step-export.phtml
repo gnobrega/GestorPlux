@@ -51,6 +51,25 @@
     //Inicia as ações da etapa
     function stepExportInit() {
         $("#sp-itens-selected").html(listaFotos.length);
+        $(".btnSalvar").off("click");
+        
+        //Salva o booking
+        $(".btnSalvar").on("click", function() {
+            wait();
+            var dados = {
+                campanha_id: $("[name=id_campanha]").val(),
+                tipo: $("[name=tipo]").val(),
+                canais_ids: $("[name='canais[]']").val(),
+                layout: $("[name=layout]").val(),
+                assinatura: $("[name=assinatura]").val(),
+                fotos: JSON.stringify(listaFotos)
+            };
+            $.post("/booking/salvar", dados, function (rs) {
+                if( rs.status == 'success' ) {
+                    window.location = "/booking";
+                }
+            }, 'json');
+        });
     }
     
     //Exportação
@@ -70,5 +89,5 @@
             toastr.warning("Um pop-up foi bloqueado. É necessário realizar a liberação no browser.");
         }
     });
-
+    
 </script>
