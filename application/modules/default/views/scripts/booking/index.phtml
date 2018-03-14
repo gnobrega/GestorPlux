@@ -1,120 +1,32 @@
 <!-- Content Header (Page header) -->
-<?php echo $this->page()->header("Criação de Booking") ?>
+<?php echo $this->page()->header("Lista de bookings") ?>
 
-<!-- Tabs -->
 <div class="row">
-    <div class="col-md-12">
-        <div class="booking-steps">
-            <div class="row">
-                <div class="col-md-3"><button class="btn btn-success" tab="step-form">1. Formulário</button></div>
-                <div class="col-md-3"><button class="btn btn-default disabled" tab="step-photos">2. Seleção de fotos</button></div>
-                <div class="col-md-3"><button class="btn btn-default disabled" tab="step-export">3. Exportação</button></div>
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <!-- Botão voltar -->
+                <button type="button" class="btn btn-default btn-voltar"><i class="fa fa-mail-reply"></i> Voltar</button>
+                &nbsp;
+                <!-- Botão novo -->
+                <button type="button" class="btn btn-primary grid-act-new"> Novo</button>
+            </div>
+            <div class="ibox-content">
+                
+                <!-- Grid -->
+                <?php echo $this->grid->html(); ?>
             </div>
         </div>
     </div>
 </div>
-<div class="row booking-content">
-    <div class="col-md-12">
-
-        <?php
-            $this->lineButtons = true;
-            
-            //STEP PHOTOS
-            echo $this->render("booking/step-form.phtml");
-            
-            //STEP PHOTOS
-            echo $this->render("booking/step-photos.phtml");
-            
-            //STEP EXPORT
-            echo $this->render("booking/step-export.phtml");
-        ?>
-    </div>
-</div>
 
 <script>
-    $(document).ready(function () {
-
-        $('.file-box').each(function () {
-            animationHover(this, 'pulse');
-        });
-
-        //Etapas
-        $("div.booking-content").on("click", "div.step-buttons button.btn-back", function (e) {
+    $(function() {
+        
+        //Redireciona para a tela de importação
+        $("button#btn-importar").on("click", function(e) {
             e.preventDefault();
-            if ($(this).hasClass("disabled")) {
-                return false;
-            }
-            $btnStep = $("div.booking-steps button.btn-success");
-            var step = $btnStep.parent().index();
-            if ($(this).hasClass('btn-next')) {
-                step++;
-            } else {
-                step--;
-            }
-            toStep(step);
+            window.location = "/campanha/importar";
         });
     });
-    
-    //Navega entre as etapas
-    function toStep(step) {
-        var $btnStep = $("div.booking-steps button.btn-success");
-        var $btnNextStep = null;
-        var $btnBack = $("div.step-buttons button.btn-back");
-        var $btnNext = $("div.step-buttons button.btn-next");
-        var totalButtons = $("div.booking-steps button").length;
-
-        disableButton($("div.booking-steps button"));
-        disableButton($btnBack);
-        disableButton($btnNext);
-
-        switch (step) {
-            case 0:
-                $btnNextStep = $("button[tab=step-form]");
-                break;
-            case 1:
-                $btnNextStep = $("button[tab=step-photos]");
-                break;
-            case 2:
-                $btnNextStep = $("button[tab=step-export]");
-                break;
-        }
-
-        enableButton($btnNextStep, "btn-success");
-        if (step < (totalButtons - 1)) {
-            enableButton($btnNext, 'btn-primary');
-        } else { //Última etapa
-            enableButton($btnNext, 'btn-primary');
-            $btnNext.html("Finalizar");
-        }
-        if (step > 0) {
-            enableButton($btnBack, 'btn-primary');
-        } else {
-            disableButton($btnBack, 'btn-primary');
-        }
-
-        //Exibe/oculta a tela
-        var tab = $btnNextStep.attr("tab");
-        $(".tab-booking").hide();
-        $("#tab-" + tab).show();
-        
-        function disableButton($btn) {
-            $btn.removeClass("btn-success");
-            $btn.removeClass("btn-primary");
-            $btn.addClass("btn-default");
-            $btn.addClass("disabled");
-        }
-
-        function enableButton($btn, cls) {
-            $btn.removeClass("btn-default");
-            $btn.removeClass("disabled");
-            $btn.addClass(cls);
-        }
-        
-        //Chama os eventos da tab
-        if( step == 1 ) {
-            stepPhotosInit();
-        } else if( step == 2 ) {
-            stepExportInit();
-        }
-    }
 </script>
