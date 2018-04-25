@@ -20,7 +20,7 @@ class ImagemController extends AbstractController {
      * Exibe a miniatura de uma imagem
      */
     public function thumbAction() {
-        $url = "https://s3.amazonaws.com/checkin-fotografico/photos/location_100/2017-09-25_user_27_station_0_IMG_20170922_161522.jpg";
+        $url = "https://s3.amazonaws.com/checkin-fotografico/photos-plux/location_114/2018/04/24/2018-04-24_user_9_station_0_IMG_20180424_1027132.jpg";
         
         $filename = $url;
        
