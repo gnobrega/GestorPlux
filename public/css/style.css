@@ -4921,7 +4921,7 @@ ul.notes li div {
 }
 .file .icon,
 .file .image {
-  height: 145px;
+  height: 193px;
   overflow: hidden;
 }
 .file .icon {
@@ -8573,7 +8573,7 @@ div.file-box div.file div.correct {
     z-index: 5;
 }
 div.file-box div.file div.correct img {
-    margin-top: 50px;
+    margin-top: 90px;
 }
 div.file-box div.file.selected div.over,
 div.file-box div.file.selected div.correct {
