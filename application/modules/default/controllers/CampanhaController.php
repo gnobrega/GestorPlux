@@ -190,6 +190,9 @@ class CampanhaController extends AbstractController {
     public function salvarAction($return = false) {
         $_POST['_inicio'] = Core_Global::dataIso($_POST['_inicio']);
         $_POST['_fim'] = Core_Global::dataIso($_POST['_fim']);
+        if( !isset($_POST['_n_pecas']) ) {
+            $_POST['_n_pecas'] = 0;
+        }
         $rs = parent::salvarAction(true);
         
         //Cria o relacionamento com os canais
