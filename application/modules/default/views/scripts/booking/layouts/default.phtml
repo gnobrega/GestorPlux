@@ -44,7 +44,7 @@
      
     //Gera o nome do arquivo - LOOK_BOOKING_PI_CAMPANHA_DATA
     $camp = ( $this->campanha['pi'] ) ? $this->campanha['pi'] : $this->campanha['nome'];
-    $arquivoNome = strtolower("LOOK_BOOKING_{$camp}_" . date("Y_m_d"));
+    $arquivoNome = str_replace("/", "-", strtolower("LOOK_BOOKING_{$camp}_" . date("Y_m_d")));
     
     //Exporta o arquivo
     $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
