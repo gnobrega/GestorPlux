@@ -200,7 +200,7 @@
                 $shape->setWidth(940);
                 $shape->setOffsetX(55);
                 $shape->setOffsetY($yStart);
-                $lin = $shape->createTextRun("CANAL " . strtoupper($canal['nome']));
+                $lin = $shape->createTextRun("CANAL " . strtoupper(utf8_encode($canal['nome'])));
                 $lin->getFont()->setBold(true);
                 $lin->getFont()->setSize(11);
                 $lin->getFont()->setName("Roboto Condensed");
