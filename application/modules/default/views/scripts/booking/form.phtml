@@ -57,6 +57,8 @@
     
     //Navega entre as etapas
     function toStep(step) {
+        $("#resumoCampanha strong").html($("select[name=id_campanha] option:selected").text());
+        
         var $btnStep = $("div.booking-steps button.btn-success");
         var $btnNextStep = null;
         var $btnBack = $("div.step-buttons button.btn-back");
