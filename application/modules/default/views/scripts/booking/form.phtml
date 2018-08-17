@@ -53,6 +53,11 @@
             }
             toStep(step);
         });
+        
+        //Mantém a sessão aberta
+        setInterval(function() {
+            $.get("/booking/manter-sessao");
+        }, 30000);
     });
     
     //Navega entre as etapas

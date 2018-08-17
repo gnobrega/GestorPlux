@@ -589,4 +589,12 @@ class BookingController extends AbstractController {
         //Renderiza a view
         $this->renderScript($this->_entity.'/form.phtml');
     }
+    
+    /**
+     * Mantém a senssão aberta
+     */
+    public function manterSessaoAction() {
+        echo 1;
+        die;
+    }
 }
