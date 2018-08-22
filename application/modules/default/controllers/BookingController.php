@@ -437,12 +437,12 @@ class BookingController extends AbstractController {
      */
     public function exportarAction() {
         $this->_helper->layout->disableLayout();
-        $campanhaId                 = $_GET['campanhaId'];
-        $canaisIds                  = $_GET['canaisIds'];
-        $this->view->constTipo      = $_GET['constTipo'];
-        $this->view->constLayout    = $_GET['constLayout'];
-        $this->view->fotos          = $_GET['fotos'];
-        $this->view->assinatura     = $_GET['assinatura'];
+        $campanhaId                 = $_REQUEST['campanhaId'];
+        $canaisIds                  = $_REQUEST['canaisIds'];
+        $this->view->constTipo      = $_REQUEST['constTipo'];
+        $this->view->constLayout    = $_REQUEST['constLayout'];
+        $this->view->fotos          = $_REQUEST['fotos'];
+        $this->view->assinatura     = $_REQUEST['assinatura'];
         $this->view->ambientes      = array();
 
         //Carrega os detalhes das fotos
@@ -595,6 +595,32 @@ class BookingController extends AbstractController {
      */
     public function manterSessaoAction() {
         echo 1;
+        die;
+    }
+    
+    /**
+     * Força o download do booking
+     */
+    public function forceDownloadAction() {
+        $file = ".".utf8_decode($_GET['url']);
+        $fileName = substr($file, strrpos($file, "/")+1);
+        if( is_file($file) ) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="'.$fileName.'"');
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($file)); //Absolute URL
+            ob_clean();
+            flush();
+            readfile($file); //Absolute URL
+            exit();
+        }
+        echo utf8_decode($file);
+        
+        
         die;
     }
 }

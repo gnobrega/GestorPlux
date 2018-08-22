@@ -86,11 +86,20 @@
             assinatura  : $("input[name=assinatura]").val(),
             fotos : listaFotos
         }
-        var url = "/booking/exportar/?" + $.param(params);
+        /*var url = "/booking/exportar/?" + $.param(params);
         var popup = window.open(url);             
         if( !popup || popup.closed || typeof popup.closed=='undefined' ) { 
             toastr.warning("Um pop-up foi bloqueado. É necessário realizar a liberação no browser.");
-        }
+        }*/
+        wait();
+        $.post("/booking/exportar/", params, function(rs) {
+            wait(true);
+            var url = rs.substr(1);
+            var popup = window.open("/booking/force-download?url="+url);             
+            if( !popup || popup.closed || typeof popup.closed=='undefined' ) { 
+                toastr.warning("Um pop-up foi bloqueado. É necessário realizar a liberação no browser.");
+            }
+        });
     });
     
 </script>

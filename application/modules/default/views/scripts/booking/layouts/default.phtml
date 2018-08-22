@@ -50,10 +50,11 @@
     $objWriter = PHPPowerPoint_IOFactory::createWriter($objPHPPowerPoint, 'PowerPoint2007');
     $arquivo = "./tmp/{$arquivoNome}.pptx";
     $objWriter->save($arquivo);
-    $contentFile = file_get_contents($arquivo);
+    echo utf8_encode($arquivo);die;
+    //$contentFile = file_get_contents($arquivo);
 
     //Força o download
-    download($arquivo, $arquivoNome);
+    //download($arquivo, $arquivoNome);
         
     
     /*************************************/
