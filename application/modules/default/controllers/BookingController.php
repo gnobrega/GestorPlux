@@ -603,6 +603,8 @@ class BookingController extends AbstractController {
      */
     public function forceDownloadAction() {
         set_time_limit(0);
+        ini_set ( 'memory_limit', '1024M' );
+        
         $file = ".".utf8_decode($_GET['url']);
         $fileName = substr($file, strrpos($file, "/")+1);
         if( is_file($file) ) {
