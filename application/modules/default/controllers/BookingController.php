@@ -491,7 +491,7 @@ class BookingController extends AbstractController {
         
         //Carrega os canais
         $mdlCanal = new Model_Canal();
-        $this->view->canais = $mdlCanal->fetchAll("id IN (" . implode(',', $canaisIds) . ")")->toArray();
+        $this->view->canais = $mdlCanal->fetchAll("id IN (" . implode(',', $canaisIds) . ")", "nome")->toArray();
         
         //Baixa as imagens temporárias
         $this->baixarFotos($this->view->indices);
