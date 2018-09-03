@@ -456,7 +456,7 @@ class BookingController extends AbstractController {
         foreach( $this->view->indices as $indice ) {
             $ambientesIds[$indice['id_ambiente']] = $indice['id_ambiente'];
         }
-        $ambientes = $mdlAmbiente->fetchAll("id IN (" . implode(",", $ambientesIds) . ")")->toArray();
+        $ambientes = $mdlAmbiente->fetchAll("id IN (" . implode(",", $ambientesIds) . ")", "nome")->toArray();
         $this->view->ambientes = array();
         foreach( $ambientes as $ambiente ) {
             $this->view->ambientes[$ambiente['id_canal']][] = $ambiente;
