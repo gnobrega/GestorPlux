@@ -83,4 +83,18 @@ class Model_S3BookingIndices extends Model_Abstract {
         return $rs;
     }
     
+    /**
+     * Carrega os índices para a geração do booking
+     */
+    public function carregarIndicesBooking($where) {
+        $adapter = $this->getAdapter();
+        $sql = $adapter
+            ->select()
+            ->from($this->_name)
+            ->join("ambiente", "ambiente.id = {$this->_name}.id_ambiente", null)
+            ->where($where)
+            ->order(array("ambiente.nome", $this->_name.".data_foto"));
+        $rs = $adapter->fetchAll($sql);
+        return $rs;
+    }
 }

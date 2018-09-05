@@ -85,7 +85,8 @@
     var pagination;
     var currentPage;
     Form.init("form-booking-fotos");
-    
+    <?php echo "var APPLICATION_ENV = '".APPLICATION_ENV."';\n"; ?>
+        
     //Seleciona todas as imagens
     $("div.grid-options button.btn-select-all").on('click', function(e) {
         e.preventDefault();
@@ -275,6 +276,7 @@
         click1 = null;
         currentPage = pagina;
         $('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
+        var urlConvert = '/imagem/thumb?url=';
         
         //Realiza a requisição
         var filtros = {
@@ -314,6 +316,14 @@
                     var nmAmbiente = imagens[i].ambiente;
                     if( nmAmbiente.length > 45 ) {
                         nmAmbiente = imagens[i].ambiente.substr(0, 45) + "...";
+                    }
+                    
+                    //Utiliza a redução de imagem apenas em produção
+                    var url;
+                    if( APPLICATION_ENV == 'development' ) {
+                        url = imagens[i].url;
+                    } else {
+                        url = "/imagem/thumb?url="+encodeURIComponent(imagens[i].url)+"&width=258";
                     }
                     
                     html += "\n\
