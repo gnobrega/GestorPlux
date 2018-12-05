@@ -213,15 +213,32 @@
     function atualizarContador() {
         var total = listaFotos.length;
         $("#resumoSelecionadas strong").html(total);
+        for( i in totalPontosSel ) {
+            var c = 0;
+            for( j in totalPontosSel[i] ) {
+                if( totalPontosSel[i][j] ) {
+                    c++;
+                }
+            }
+            $("li [role=treeitem][id="+i+"] span.sel").html(c);
+        }
     }
     
     //Seleciona a foto
+    var totalPontosSel = Array();
     function selecionarFoto($item, semIntervalo) {
         var key = $item.attr('key');
+        var idAmb = $item.attr('id_ambiente');
         var index = listaFotos.indexOf(key);
         $item.addClass("selected");
         if( index == -1 ) {
             listaFotos.push(key);
+        }
+        if( !totalPontosSel[idAmb] ) {
+            totalPontosSel[idAmb] = Array();
+        }
+        if( totalPontosSel[idAmb].indexOf(key) ) {
+            totalPontosSel[idAmb].push(key);
         }
         
         //Seleção de intervalo
@@ -263,10 +280,15 @@
     //Deseleciona a foto
     function deselecionarFoto($item) {
         var key = $item.attr('key');
+        var idAmb = $item.attr('id_ambiente');
         var index = listaFotos.indexOf(key);
         $item.removeClass("selected");
         if( index > -1 ) {
             listaFotos.splice(index, 1);
+        }
+        if( totalPontosSel[idAmb] && totalPontosSel[idAmb].indexOf(key) > -1 ) {
+            var idx = totalPontosSel[idAmb].indexOf(key);
+            totalPontosSel[idAmb][idx] = null;
         }
         atualizarContador();
     }
@@ -312,7 +334,12 @@
                     var selected = "";
                     if( listaFotos.indexOf(key) > -1 ) {
                         selected = "selected";
+                        if(!totalPontosSel[imagens[i].id_ambiente]) {
+                            totalPontosSel[imagens[i].id_ambiente] = new Array();
+                        }
+                        totalPontosSel[imagens[i].id_ambiente].push(key);
                     }
+
                     var nmAmbiente = imagens[i].ambiente;
                     if( nmAmbiente.length > 45 ) {
                         nmAmbiente = imagens[i].ambiente.substr(0, 45) + "...";
@@ -328,7 +355,7 @@
                     
                     html += "\n\
                         <div class='file-box'>\n\
-                            <div class='file "+selected+"' key='"+imagens[i].key+"'>\n\
+                            <div class='file "+selected+"' key='"+imagens[i].key+"' id_ambiente='"+imagens[i].id_ambiente+"'>\n\
                                 <div class='correct'><img src='/img/correct.png' /></div>\n\
                                 <div class='over'></div>\n\
                                 <a href='#'>\n\
@@ -367,7 +394,7 @@
                             for( j in canais[i].ambientes ) {
                                 canal.children.push({
                                     'id' : canais[i].ambientes[j].id,
-                                    'text' : canais[i].ambientes[j].nome + " (" + canais[i].ambientes[j].indices + ")",
+                                    'text' : canais[i].ambientes[j].nome + " (<span class='sel'>0</span>/" + canais[i].ambientes[j].indices + ")",
                                     'type' : 'ambiente'
                                 });
                             }
@@ -378,6 +405,9 @@
                     }
                     carregarTreeview(data);
                 }
+                
+                //Atualiza o contador
+                atualizarContador();
             }
         }, 'json');
     }
@@ -400,7 +430,6 @@
             if( !data.node || data.node.parent == '#' ) {
                 return;
             }
-            
             var $dataInicio = $("#form-booking-fotos input[name=dt_inicio]");
             var $dataFim = $("#form-booking-fotos input[name=dt_fim]");
             var $canais = $("select[name='canais[]']");
