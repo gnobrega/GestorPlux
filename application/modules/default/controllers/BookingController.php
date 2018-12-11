@@ -452,7 +452,12 @@ class BookingController extends AbstractController {
         $mdlIndices = new Model_S3BookingIndices();
         $this->view->indices = array();
         //$this->view->indices = $mdlIndices->fetchAll("`key` IN ('" . implode("','", $this->view->fotos) . "')", array("id_ambiente","data_foto"))->toArray();
-        $this->view->indices = $mdlIndices->carregarIndicesBooking("s3_booking_indices.id IN ('" . implode("','", $this->view->fotos) . "')");
+        if( is_numeric($this->view->fotos[0]) ) {
+            $where = "s3_booking_indices.id IN ('" . implode("','", $this->view->fotos) . "')";
+        } else {
+            $where = "`key` IN ('" . implode("','", $this->view->fotos) . "')";
+        }
+        $this->view->indices = $mdlIndices->carregarIndicesBooking($where);
         
         //Carrega os ambientes
         $mdlAmbiente = new Model_Ambiente();
