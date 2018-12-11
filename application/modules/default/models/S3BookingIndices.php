@@ -42,7 +42,7 @@ class Model_S3BookingIndices extends Model_Abstract {
         
         $sql = $adapter
                 ->select()
-                ->from($this->_name)
+                ->from($this->_name, array("*","id_indice"=>"id"))
                 ->join("ambiente", "ambiente.id = {$this->_name}.id_ambiente")
                 ->where($where)
                 ->limit($limite, $offset)

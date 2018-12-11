@@ -201,7 +201,8 @@
     $("#container-booking-imagens").on("click", "div.file", function(e) {
         e.preventDefault();
         var key = $(this).attr('key');
-        var index = listaFotos.indexOf(key);
+        var id_indice = $(this).attr('id_indice');
+        var index = listaFotos.indexOf(id_indice);
         if( !$(this).hasClass("selected") ) {
             selecionarFoto($(this));
         } else {
@@ -228,17 +229,18 @@
     var totalPontosSel = Array();
     function selecionarFoto($item, semIntervalo) {
         var key = $item.attr('key');
+        var id_indice = $item.attr('id_indice');
         var idAmb = $item.attr('id_ambiente');
-        var index = listaFotos.indexOf(key);
+        var index = listaFotos.indexOf(id_indice);
         $item.addClass("selected");
         if( index == -1 ) {
-            listaFotos.push(key);
+            listaFotos.push(id_indice);
         }
         if( !totalPontosSel[idAmb] ) {
             totalPontosSel[idAmb] = Array();
         }
-        if( totalPontosSel[idAmb].indexOf(key) ) {
-            totalPontosSel[idAmb].push(key);
+        if( totalPontosSel[idAmb].indexOf(id_indice) ) {
+            totalPontosSel[idAmb].push(id_indice);
         }
         
         //Seleção de intervalo
@@ -269,7 +271,7 @@
         var files = $("div.file-box div.file");
         if( files.length ) {
             for( var i = 0; i < files.length; i++ ) {
-                if( files.eq(i).attr('key') == $item.attr('key') ) {
+                if( files.eq(i).attr('id_indice') == $item.attr('id_indice') ) {
                     return i;
                 }
             }
@@ -280,14 +282,15 @@
     //Deseleciona a foto
     function deselecionarFoto($item) {
         var key = $item.attr('key');
+        var id_indice = $item.attr('id_indice');
         var idAmb = $item.attr('id_ambiente');
-        var index = listaFotos.indexOf(key);
+        var index = listaFotos.indexOf(id_indice);
         $item.removeClass("selected");
         if( index > -1 ) {
             listaFotos.splice(index, 1);
         }
-        if( totalPontosSel[idAmb] && totalPontosSel[idAmb].indexOf(key) > -1 ) {
-            var idx = totalPontosSel[idAmb].indexOf(key);
+        if( totalPontosSel[idAmb] && totalPontosSel[idAmb].indexOf(id_indice) > -1 ) {
+            var idx = totalPontosSel[idAmb].indexOf(id_indice);
             totalPontosSel[idAmb][idx] = null;
         }
         atualizarContador();
@@ -331,13 +334,14 @@
                         html += "<div>";
                     }
                     var key = imagens[i].key;
+                    var id_indice = imagens[i].id_indice;
                     var selected = "";
-                    if( listaFotos.indexOf(key) > -1 ) {
+                    if( listaFotos.indexOf(id_indice) > -1 ) {
                         selected = "selected";
                         if(!totalPontosSel[imagens[i].id_ambiente]) {
                             totalPontosSel[imagens[i].id_ambiente] = new Array();
                         }
-                        totalPontosSel[imagens[i].id_ambiente].push(key);
+                        totalPontosSel[imagens[i].id_ambiente].push(id_indice);
                     }
 
                     var nmAmbiente = imagens[i].ambiente;
@@ -355,7 +359,7 @@
                     
                     html += "\n\
                         <div class='file-box'>\n\
-                            <div class='file "+selected+"' key='"+imagens[i].key+"' id_ambiente='"+imagens[i].id_ambiente+"'>\n\
+                            <div class='file "+selected+"' id_indice='"+imagens[i].id_indice+"' key='"+imagens[i].key+"' id_ambiente='"+imagens[i].id_ambiente+"'>\n\
                                 <div class='correct'><img src='/img/correct.png' /></div>\n\
                                 <div class='over'></div>\n\
                                 <a href='#'>\n\

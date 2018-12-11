@@ -176,6 +176,7 @@ class BookingController extends AbstractController {
         }
         $rs = $mdlIndices->pesquisar($canaisIds, $campAmbientesIds, $dataInicio, $dataFim, $limite, $pagina, $ambienteId);
         Core_Global::encodeListUtf($rs['indices'], 1);
+   
         foreach( $rs['indices'] as $i => $indice ) {
             $ambienteId = $indice['id_ambiente'];
             $ambiente = "Sem nome";
@@ -191,8 +192,6 @@ class BookingController extends AbstractController {
                         }
                     }
                 }
-                
-                
             }
             $rs['indices'][$i]['ambiente'] = $ambiente;
             $rs['indices'][$i]['data_foto'] = Core_Global::dataBr($rs['indices'][$i]['data_foto']);
@@ -448,12 +447,12 @@ class BookingController extends AbstractController {
         $this->view->fotos          = $_REQUEST['fotos'];
         $this->view->assinatura     = $_REQUEST['assinatura'];
         $this->view->ambientes      = array();
-
+ 
         //Carrega os detalhes das fotos
         $mdlIndices = new Model_S3BookingIndices();
         $this->view->indices = array();
         //$this->view->indices = $mdlIndices->fetchAll("`key` IN ('" . implode("','", $this->view->fotos) . "')", array("id_ambiente","data_foto"))->toArray();
-        $this->view->indices = $mdlIndices->carregarIndicesBooking("`key` IN ('" . implode("','", $this->view->fotos) . "')");
+        $this->view->indices = $mdlIndices->carregarIndicesBooking("s3_booking_indices.id IN ('" . implode("','", $this->view->fotos) . "')");
         
         //Carrega os ambientes
         $mdlAmbiente = new Model_Ambiente();
