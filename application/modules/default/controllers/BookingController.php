@@ -457,7 +457,7 @@ class BookingController extends AbstractController {
         } else {
             $where = "`key` IN ('" . implode("','", $this->view->fotos) . "')";
         }
-        $this->view->indices = $mdlIndices->carregarIndicesBooking($where);
+        $this->view->indices = $mdlIndices->carregarIndicesBooking($where); 
         
         //Carrega os ambientes
         $mdlAmbiente = new Model_Ambiente();
