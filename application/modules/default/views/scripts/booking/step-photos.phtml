@@ -300,7 +300,10 @@
     function carregarFotos(canais, dataInicio, dataFim, pagina, atualizarTreeview, ambienteId) {
         click1 = null;
         currentPage = pagina;
-        $('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
+        //$('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
+        if( !$('#ibox-galeria').children('.ibox-content').hasClass('sk-loading') ) {
+            $('#ibox-galeria').children('.ibox-content').addClass('sk-loading')
+        }
         var urlConvert = '/imagem/thumb?url=';
         
         //Realiza a requisição
@@ -315,6 +318,7 @@
             filtros.ambiente_id = ambienteId;
         }
         $.get("/booking/carregar-imagens?"+jQuery.param(filtros), function(rs) {
+            $('#ibox-galeria').children('.ibox-content').removeClass('sk-loading');
             var dados = getResponse(rs);
             var imagens = dados.indices;
             var canais = dados.canais;
@@ -376,7 +380,6 @@
                         </div>";
                 }
                 html += "</div>";
-                $('#ibox-galeria').children('.ibox-content').toggleClass('sk-loading');
                 $("#container-booking-imagens").html(html);
                 
                 //Gera a paginação
