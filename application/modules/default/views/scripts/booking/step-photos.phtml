@@ -202,7 +202,7 @@
         e.preventDefault();
         var key = $(this).attr('key');
         var id_indice = $(this).attr('id_indice');
-        var index = listaFotos.indexOf(id_indice);
+        var index = listaFotos.indexOf(key);
         if( !$(this).hasClass("selected") ) {
             selecionarFoto($(this));
         } else {
@@ -231,16 +231,16 @@
         var key = $item.attr('key');
         var id_indice = $item.attr('id_indice');
         var idAmb = $item.attr('id_ambiente');
-        var index = listaFotos.indexOf(id_indice);
+        var index = listaFotos.indexOf(key);
         $item.addClass("selected");
         if( index == -1 ) {
-            listaFotos.push(id_indice);
+            listaFotos.push(key);
         }
         if( !totalPontosSel[idAmb] ) {
             totalPontosSel[idAmb] = Array();
         }
-        if( totalPontosSel[idAmb].indexOf(id_indice) ) {
-            totalPontosSel[idAmb].push(id_indice);
+        if( totalPontosSel[idAmb].indexOf(key) ) {
+            totalPontosSel[idAmb].push(key);
         }
         
         //Seleção de intervalo
@@ -284,13 +284,13 @@
         var key = $item.attr('key');
         var id_indice = $item.attr('id_indice');
         var idAmb = $item.attr('id_ambiente');
-        var index = listaFotos.indexOf(id_indice);
+        var index = listaFotos.indexOf(key);
         $item.removeClass("selected");
         if( index > -1 ) {
             listaFotos.splice(index, 1);
         }
-        if( totalPontosSel[idAmb] && totalPontosSel[idAmb].indexOf(id_indice) > -1 ) {
-            var idx = totalPontosSel[idAmb].indexOf(id_indice);
+        if( totalPontosSel[idAmb] && totalPontosSel[idAmb].indexOf(key) > -1 ) {
+            var idx = totalPontosSel[idAmb].indexOf(key);
             totalPontosSel[idAmb][idx] = null;
         }
         atualizarContador();
@@ -340,12 +340,12 @@
                     var key = imagens[i].key;
                     var id_indice = imagens[i].id_indice;
                     var selected = "";
-                    if( listaFotos.indexOf(id_indice) > -1 ) {
+                    if( listaFotos.indexOf(key) > -1 ) {
                         selected = "selected";
                         if(!totalPontosSel[imagens[i].id_ambiente]) {
                             totalPontosSel[imagens[i].id_ambiente] = new Array();
                         }
-                        totalPontosSel[imagens[i].id_ambiente].push(id_indice);
+                        totalPontosSel[imagens[i].id_ambiente].push(key);
                     }
 
                     var nmAmbiente = imagens[i].ambiente;
